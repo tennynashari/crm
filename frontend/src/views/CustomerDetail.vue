@@ -64,6 +64,10 @@
             </select>
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Assigned Sales</label>
+            <p class="text-gray-900">{{ customer.assigned_sales?.name || '-' }}</p>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Lead Status</label>
             <select v-model="customer.lead_status_id" @change="updateCustomer" class="input">
               <option :value="null">No Status</option>
