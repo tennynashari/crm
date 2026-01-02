@@ -1,0 +1,12 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return ['Laravel' => app()->version()];
+});
+
+// Test route
+Route::get('/test', function () {
+    return response()->json(['message' => 'Test OK', 'session' => config('session.driver')]);
+});
