@@ -48,7 +48,7 @@
           <option :value="null">All Actions</option>
           <option value="today">Today</option>
           <option value="this_week">Next 7 Days</option>
-          <option value="meeting">Meeting</option>
+          <option value="meeting">Upcoming Meeting</option>
         </select>
       </div>
     </div>

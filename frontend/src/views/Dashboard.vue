@@ -24,30 +24,16 @@
           </div>
         </router-link>
 
-        <router-link to="/customers?lead_status_id=7" class="card hover:shadow-lg transition-shadow cursor-pointer">
-          <div class="flex items-center">
-            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">🔥 Hot Leads</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ stats.hot_leads }}</p>
-            </div>
-          </div>
-        </router-link>
-
-        <router-link to="/customers?lead_status_id=6" class="card hover:shadow-lg transition-shadow cursor-pointer">
+        <router-link to="/customers?next_action_status=meeting" class="card hover:shadow-lg transition-shadow cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-orange-500 rounded-md p-3">
               <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">🔥 Warm Lead</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ stats.warm_leads }}</p>
+              <p class="text-sm font-medium text-gray-600">📅 Upcoming Meeting</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats.meeting_count }}</p>
             </div>
           </div>
         </router-link>
@@ -62,6 +48,20 @@
             <div class="ml-4">
               <p class="text-sm font-medium text-gray-600">⏰ Action Today</p>
               <p class="text-2xl font-semibold text-gray-900">{{ stats.action_today }}</p>
+            </div>
+          </div>
+        </router-link>
+
+        <router-link to="/customers?lead_status_id=7" class="card hover:shadow-lg transition-shadow cursor-pointer">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">🔥 Hot Leads</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats.hot_leads }}</p>
             </div>
           </div>
         </router-link>
@@ -101,29 +101,6 @@
             >
               <span class="text-sm text-gray-700">{{ area.area }}</span>
               <span class="text-sm font-semibold text-gray-900">{{ area.total }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">💤 Dormant Leads</p>
-              <p class="text-2xl font-semibold text-gray-900 mt-1">{{ stats.dormant_leads }}</p>
-              <p class="text-xs text-gray-500 mt-1">No interaction in 30 days</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">📥 New Inbound Today</p>
-              <p class="text-2xl font-semibold text-gray-900 mt-1">{{ stats.new_inbound_today }}</p>
-              <p class="text-xs text-gray-500 mt-1">Email only</p>
             </div>
           </div>
         </div>

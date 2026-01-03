@@ -57,11 +57,10 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Warm leads
-        $warmLeads = (clone $customerQuery)
-            ->whereHas('leadStatus', function ($query) {
-                $query->where('code', 'warm');
-            })
+        // Meeting count (action plan contains 'meeting' and date >= today)
+        $meetingCount = (clone $customerQuery)
+            ->where('next_action_plan', 'ilike', '%meeting%')
+            ->whereDate('next_action_date', '>=', now()->toDateString())
             ->count();
 
         // Dormant leads (no interaction in last 30 days)
@@ -86,7 +85,7 @@ class DashboardController extends Controller
             'customers_by_area' => $customersByArea,
             'leads_by_status' => $leadsByStatus,
             'hot_leads' => $hotLeads,
-            'warm_leads' => $warmLeads,
+            'meeting_count' => $meetingCount,
             'dormant_leads' => $dormantLeads,
             'new_inbound_today' => $newInboundToday,
             'action_today' => $actionToday,
