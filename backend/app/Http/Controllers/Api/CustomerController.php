@@ -12,7 +12,13 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = Customer::with(['area', 'assignedSales', 'leadStatus', 'contacts']);
+
+        // Role-based filtering: sales only see their assigned customers
+        if ($user->role !== 'admin') {
+            $query->where('assigned_sales_id', $user->id);
+        }
 
         // Filter by area
         if ($request->has('area_id')) {
@@ -24,8 +30,8 @@ class CustomerController extends Controller
             $query->where('lead_status_id', $request->lead_status_id);
         }
 
-        // Filter by assigned sales
-        if ($request->has('assigned_sales_id')) {
+        // Filter by assigned sales (admin can filter by any sales)
+        if ($request->has('assigned_sales_id') && $user->role === 'admin') {
             $query->where('assigned_sales_id', $request->assigned_sales_id);
         }
 

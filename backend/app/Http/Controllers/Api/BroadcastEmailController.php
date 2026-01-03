@@ -23,8 +23,14 @@ class BroadcastEmailController extends Controller
             'area_id' => 'required_if:filter_type,area|exists:areas,id'
         ]);
 
+        $user = auth()->user();
         $emails = [];
         $query = Customer::with('contacts');
+
+        // Role-based filtering: sales only see their assigned customers
+        if ($user->role !== 'admin') {
+            $query->where('assigned_sales_id', $user->id);
+        }
 
         if ($request->filter_type === 'area') {
             $query->where('area_id', $request->area_id);
@@ -88,8 +94,13 @@ class BroadcastEmailController extends Controller
         Config::set('mail.from.address', $emailSetting->mail_from_address);
         Config::set('mail.from.name', $emailSetting->mail_from_name);
 
-        // Get recipients
+        // Get recipients with role-based filtering
         $query = Customer::with('contacts');
+        
+        // Role-based filtering: sales only see their assigned customers
+        if ($user->role !== 'admin') {
+            $query->where('assigned_sales_id', $user->id);
+        }
         
         if ($request->filter_type === 'area' && $request->area_id) {
             $query->where('area_id', $request->area_id);
