@@ -73,7 +73,8 @@ class CustomerController extends Controller
                     now()->addDays(7)->endOfDay()
                 ]);
             } elseif ($request->next_action_status === 'meeting') {
-                $query->where('next_action_plan', 'ilike', '%meeting%');
+                $query->where('next_action_plan', 'ilike', '%meeting%')
+                      ->whereDate('next_action_date', '>=', now()->toDateString());
             }
         }
 
