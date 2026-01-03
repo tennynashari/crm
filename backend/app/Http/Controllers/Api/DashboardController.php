@@ -52,8 +52,16 @@ class DashboardController extends Controller
 
         // Hot leads (high priority next action)
         $hotLeads = (clone $customerQuery)
-            ->where('next_action_priority', 'high')
-            ->where('next_action_status', '!=', 'done')
+            ->whereHas('leadStatus', function ($query) {
+                $query->where('code', 'hot');
+            })
+            ->count();
+
+        // Warm leads
+        $warmLeads = (clone $customerQuery)
+            ->whereHas('leadStatus', function ($query) {
+                $query->where('code', 'warm');
+            })
             ->count();
 
         // Dormant leads (no interaction in last 30 days)
@@ -72,11 +80,6 @@ class DashboardController extends Controller
         $actionToday = (clone $customerQuery)
             ->whereDate('next_action_date', Carbon::today())
             ->where('next_action_status', '!=', 'done')
-            ->count();
-
-        // Warm leads
-        $warmLeads = (clone $customerQuery)
-            ->where('lead_status_id', 2) // Warm Lead status ID
             ->count();
 
         return response()->json([

@@ -24,7 +24,7 @@
           </div>
         </router-link>
 
-        <router-link to="/customers?lead_status_id=3" class="card hover:shadow-lg transition-shadow cursor-pointer">
+        <router-link to="/customers?lead_status_id=7" class="card hover:shadow-lg transition-shadow cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
               <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@
           </div>
         </router-link>
 
-        <router-link to="/customers?lead_status_id=2" class="card hover:shadow-lg transition-shadow cursor-pointer">
+        <router-link to="/customers?lead_status_id=6" class="card hover:shadow-lg transition-shadow cursor-pointer">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-orange-500 rounded-md p-3">
               <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

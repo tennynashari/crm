@@ -75,11 +75,15 @@ class DatabaseSeeder extends Seeder
 
         // Create lead statuses
         $statuses = [
-            ['name' => 'Cold Lead', 'code' => 'cold', 'color' => '#60A5FA', 'order' => 1],
-            ['name' => 'Warm Lead', 'code' => 'warm', 'color' => '#FBBF24', 'order' => 2],
-            ['name' => 'Hot Lead', 'code' => 'hot', 'color' => '#F87171', 'order' => 3],
-            ['name' => 'Dormant Lead', 'code' => 'dormant', 'color' => '#9CA3AF', 'order' => 4],
-            ['name' => 'Lost Lead', 'code' => 'lost', 'color' => '#6B7280', 'order' => 5],
+            ['name' => 'New Lead', 'code' => 'new', 'color' => '#A78BFA', 'order' => 1],
+            ['name' => 'Contacted', 'code' => 'contacted', 'color' => '#60A5FA', 'order' => 2],
+            ['name' => 'Qualified', 'code' => 'qualified', 'color' => '#FBBF24', 'order' => 3],
+            ['name' => 'Won', 'code' => 'won', 'color' => '#34D399', 'order' => 4],
+            ['name' => 'Cold Lead', 'code' => 'cold', 'color' => '#93C5FD', 'order' => 5],
+            ['name' => 'Warm Lead', 'code' => 'warm', 'color' => '#FCD34D', 'order' => 6],
+            ['name' => 'Hot Lead', 'code' => 'hot', 'color' => '#F87171', 'order' => 7],
+            ['name' => 'Dormant Lead', 'code' => 'dormant', 'color' => '#9CA3AF', 'order' => 8],
+            ['name' => 'Lost Lead', 'code' => 'lost', 'color' => '#6B7280', 'order' => 9],
         ];
 
         $statusModels = [];
@@ -380,7 +384,7 @@ class DatabaseSeeder extends Seeder
         echo "📊 Created:\n";
         echo "   - 5 Users (1 admin, 2 sales, 1 marketing, 1 manager)\n";
         echo "   - 6 Areas\n";
-        echo "   - 5 Lead Statuses (Cold, Warm, Hot, Dormant, Lost)\n";
+        echo "   - 9 Lead Statuses (New Lead, Contacted, Qualified, Won, Cold, Warm, Hot, Dormant, Lost)\n";
         echo "   - 12 Companies (10 corporate, 2 individual customers)\n";
         echo "   - 15 Contacts (PICs)\n";
         echo "   - ~36 Interactions\n";
