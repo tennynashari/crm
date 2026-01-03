@@ -47,8 +47,8 @@
         <select v-model="filters.next_action_status" @change="applyFilters" class="input">
           <option :value="null">All Actions</option>
           <option value="today">Today</option>
-          <option value="this_week">This Week</option>
-          <option value="two_weeks">Two Weeks</option>
+          <option value="this_week">Next 7 Days</option>
+          <option value="meeting">Meeting</option>
         </select>
       </div>
     </div>
@@ -192,7 +192,7 @@
               </td>
               <td class="px-4 py-3 text-sm">
                 <div v-if="customer.next_action_date">
-                  <div class="text-gray-900 text-xs">{{ formatDate(customer.next_action_date) }}</div>
+                  <div class="text-gray-900 text-xs font-bold">{{ formatDate(customer.next_action_date) }}</div>
                   <div class="text-gray-500 text-xs truncate max-w-xs">{{ customer.next_action_plan }}</div>
                 </div>
                 <span v-else class="text-gray-400">-</span>

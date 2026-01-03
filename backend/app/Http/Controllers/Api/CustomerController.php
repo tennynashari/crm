@@ -69,14 +69,11 @@ class CustomerController extends Controller
                 $query->whereDate('next_action_date', now());
             } elseif ($request->next_action_status === 'this_week') {
                 $query->whereBetween('next_action_date', [
-                    now()->startOfWeek(),
-                    now()->endOfWeek()
-                ]);
-            } elseif ($request->next_action_status === 'two_weeks') {
-                $query->whereBetween('next_action_date', [
                     now()->startOfDay(),
-                    now()->addWeeks(2)->endOfDay()
+                    now()->addDays(7)->endOfDay()
                 ]);
+            } elseif ($request->next_action_status === 'meeting') {
+                $query->where('next_action_plan', 'ilike', '%meeting%');
             }
         }
 
