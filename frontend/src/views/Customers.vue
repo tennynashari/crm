@@ -75,16 +75,27 @@
               <p v-if="customer.phone" class="text-xs text-gray-600">📞 {{ customer.phone }}</p>
               <p v-if="customer.is_individual" class="text-xs text-gray-500">Individual Customer</p>
             </div>
-            <span
-              v-if="customer.lead_status"
-              class="badge text-xs px-2 py-1"
-              :style="{
-                backgroundColor: customer.lead_status.color + '20',
-                color: customer.lead_status.color,
-              }"
-            >
-              {{ customer.lead_status.name }}
-            </span>
+            <div class="flex flex-col items-end space-y-1">
+              <span
+                v-if="customer.lead_status"
+                class="badge text-xs px-2 py-1"
+                :style="{
+                  backgroundColor: customer.lead_status.color + '20',
+                  color: customer.lead_status.color,
+                }"
+              >
+                {{ customer.lead_status.name }}
+              </span>
+              <span
+                class="badge text-xs px-2 py-1"
+                :class="{
+                  'bg-green-100 text-green-800': customer.source === 'inbound',
+                  'bg-blue-100 text-blue-800': customer.source === 'outbound',
+                }"
+              >
+                {{ customer.source }}
+              </span>
+            </div>
           </div>
 
           <div class="space-y-1 text-sm text-gray-600">
@@ -107,6 +118,11 @@
             <p v-if="customer.next_action_date" class="text-orange-600 font-medium">
               Next: {{ formatDate(customer.next_action_date) }}
             </p>
+            <div v-if="customer.interactions && customer.interactions.length > 0" class="pt-2 border-t mt-2">
+              <p class="font-medium text-gray-700">Last Interaction:</p>
+              <p class="text-xs text-gray-600">{{ formatDateTime(customer.interactions[0].interaction_at) }}</p>
+              <p class="text-xs text-gray-500 italic truncate">{{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -119,20 +135,20 @@
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Company
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
-                PIC
-              </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Area
               </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Status
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Next Action
-              </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                 Source
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                Next Action
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                Last Interaction
               </th>
             </tr>
           </thead>
@@ -147,20 +163,6 @@
                 <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ customer.company }}</div>
                 <div class="text-xs text-gray-500 truncate max-w-xs">{{ customer.email }}</div>
                 <div v-if="customer.phone" class="text-xs text-gray-500">📞 {{ customer.phone }}</div>
-              </td>
-              <td class="px-4 py-3">
-                <div v-if="customer.contacts && customer.contacts.length > 0">
-                  <div class="text-sm font-medium text-gray-900 truncate max-w-xs">
-                    {{ customer.contacts.find(c => c.is_primary)?.name || customer.contacts[0].name }}
-                  </div>
-                  <div v-if="(customer.contacts.find(c => c.is_primary) || customer.contacts[0]).email" class="text-xs text-gray-500 truncate max-w-xs">
-                    ✉️ {{ (customer.contacts.find(c => c.is_primary) || customer.contacts[0]).email }}
-                  </div>
-                  <div v-if="(customer.contacts.find(c => c.is_primary) || customer.contacts[0]).whatsapp" class="text-xs text-gray-500">
-                    💬 {{ (customer.contacts.find(c => c.is_primary) || customer.contacts[0]).whatsapp }}
-                  </div>
-                </div>
-                <span v-else class="text-sm text-gray-400">-</span>
               </td>
               <td class="px-3 py-3 text-sm text-gray-900">
                 <div class="truncate max-w-24">{{ customer.area?.name || '-' }}</div>
@@ -177,13 +179,6 @@
                   {{ customer.lead_status.name }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-sm">
-                <div v-if="customer.next_action_date">
-                  <div class="text-gray-900 text-xs">{{ formatDate(customer.next_action_date) }}</div>
-                  <div class="text-gray-500 text-xs truncate max-w-xs">{{ customer.next_action_plan }}</div>
-                </div>
-                <span v-else class="text-gray-400">-</span>
-              </td>
               <td class="px-3 py-3">
                 <span
                   class="badge text-xs px-2 py-1 whitespace-nowrap"
@@ -194,6 +189,24 @@
                 >
                   {{ customer.source }}
                 </span>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <div v-if="customer.next_action_date">
+                  <div class="text-gray-900 text-xs">{{ formatDate(customer.next_action_date) }}</div>
+                  <div class="text-gray-500 text-xs truncate max-w-xs">{{ customer.next_action_plan }}</div>
+                </div>
+                <span v-else class="text-gray-400">-</span>
+              </td>
+              <td class="px-4 py-3 text-sm">
+                <div v-if="customer.interactions && customer.interactions.length > 0">
+                  <div class="text-gray-900 text-xs font-medium">
+                    {{ formatDateTime(customer.interactions[0].interaction_at) }}
+                  </div>
+                  <div class="text-gray-500 text-xs truncate max-w-xs">
+                    {{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}
+                  </div>
+                </div>
+                <span v-else class="text-gray-400">No history</span>
               </td>
             </tr>
           </tbody>
@@ -284,6 +297,16 @@ const formatDate = (date) => {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  })
+}
+
+const formatDateTime = (datetime) => {
+  return new Date(datetime).toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   })
 }
 

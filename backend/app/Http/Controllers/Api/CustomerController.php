@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Interaction;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,16 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Customer::with(['area', 'assignedSales', 'leadStatus', 'contacts']);
+        
+        $query = Customer::with([
+            'area', 
+            'assignedSales', 
+            'leadStatus', 
+            'contacts',
+            'interactions' => function ($q) {
+                $q->latest('interaction_at')->limit(1);
+            }
+        ]);
 
         // Role-based filtering: sales only see their assigned customers
         if ($user->role !== 'admin') {
@@ -74,12 +84,18 @@ class CustomerController extends Controller
         if ($hasNextActionFilter) {
             $query->orderBy('next_action_date', 'asc');
         } else {
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            $query->orderBy($sortBy, $sortOrder);
+            $query->orderBy('created_at', 'desc');
         }
 
         $customers = $query->paginate($request->get('per_page', 15));
+        
+        // Explicitly load latest interaction for each customer after pagination
+        foreach ($customers as $customer) {
+            $latestInteraction = $customer->interactions()
+                ->latest('interaction_at')
+                ->first();
+            $customer->setRelation('interactions', $latestInteraction ? collect([$latestInteraction]) : collect([]));
+        }
 
         return response()->json($customers);
     }
