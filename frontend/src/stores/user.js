@@ -12,7 +12,7 @@ export const useUserStore = defineStore('user', {
     async fetchUsers() {
       this.loading = true
       try {
-        const response = await api.get('/api/users')
+        const response = await api.get('/users')
         this.users = response.data
         return response.data
       } catch (error) {
@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
     async fetchSalesUsers() {
       this.loading = true
       try {
-        const response = await api.get('/api/users?role=sales')
+        const response = await api.get('/users?role=sales')
         this.salesUsers = response.data
         return response.data
       } catch (error) {
@@ -41,7 +41,7 @@ export const useUserStore = defineStore('user', {
     async fetchUser(id) {
       this.loading = true
       try {
-        const response = await api.get(`/api/users/${id}`)
+        const response = await api.get(`/users/${id}`)
         return response.data
       } catch (error) {
         throw error
@@ -53,7 +53,7 @@ export const useUserStore = defineStore('user', {
     async createUser(data) {
       this.loading = true
       try {
-        const response = await api.post('/api/users', data)
+        const response = await api.post('/users', data)
         if (data.role === 'sales') {
           this.salesUsers.push(response.data)
         } else {
@@ -70,7 +70,7 @@ export const useUserStore = defineStore('user', {
     async updateUser(id, data) {
       this.loading = true
       try {
-        const response = await api.put(`/api/users/${id}`, data)
+        const response = await api.put(`/users/${id}`, data)
         
         // Update in salesUsers array
         const salesIndex = this.salesUsers.findIndex(u => u.id === parseInt(id))
@@ -95,7 +95,7 @@ export const useUserStore = defineStore('user', {
     async deleteUser(id) {
       this.loading = true
       try {
-        await api.delete(`/api/users/${id}`)
+        await api.delete(`/users/${id}`)
         this.salesUsers = this.salesUsers.filter(u => u.id !== parseInt(id))
         this.users = this.users.filter(u => u.id !== parseInt(id))
       } catch (error) {

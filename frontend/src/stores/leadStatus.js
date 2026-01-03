@@ -11,7 +11,7 @@ export const useLeadStatusStore = defineStore('leadStatus', {
     async fetchStatuses() {
       this.loading = true
       try {
-        const response = await api.get('/api/lead-statuses')
+        const response = await api.get('/lead-statuses')
         this.statuses = response.data
         return response.data
       } catch (error) {

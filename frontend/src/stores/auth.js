@@ -10,14 +10,14 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     async getCsrfToken() {
-      await api.get('/api/csrf-cookie')
+      await api.get('/csrf-cookie')
     },
 
     async login(credentials) {
       this.loading = true
       try {
         await this.getCsrfToken()
-        const response = await api.post('/api/login', credentials)
+        const response = await api.post('/login', credentials)
         this.user = response.data.user
         this.isAuthenticated = true
         localStorage.setItem('user', JSON.stringify(response.data.user))
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.loading = true
       try {
-        await api.post('/api/logout')
+        await api.post('/logout')
       } catch (error) {
         // Ignore logout errors, just clear local state
         console.log('Logout request failed, clearing local state')
@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
     async fetchUser() {
       this.loading = true
       try {
-        const response = await api.get('/api/user')
+        const response = await api.get('/user')
         this.user = response.data.user
         this.isAuthenticated = true
         localStorage.setItem('user', JSON.stringify(response.data.user))
@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       try {
         await this.getCsrfToken()
-        const response = await api.post('/api/register', userData)
+        const response = await api.post('/register', userData)
         return response.data
       } catch (error) {
         throw error

@@ -29,27 +29,112 @@
           </svg>
           Customers
         </router-link>
-        <router-link
-          to="/areas"
-          class="flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-          active-class="bg-primary-50 text-primary-600 border-r-4 border-primary-600"
-        >
-          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Areas
-        </router-link>
-        <router-link
-          to="/sales"
-          class="flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-          active-class="bg-primary-50 text-primary-600 border-r-4 border-primary-600"
-        >
-          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          Sales
-        </router-link>
+        
+        <!-- Broadcast Email Dropdown -->
+        <div>
+          <button
+            @click="broadcastOpen = !broadcastOpen"
+            class="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+            :class="{ 'bg-primary-50 text-primary-600': broadcastOpen }"
+          >
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Broadcast Email
+            </div>
+            <svg
+              class="w-4 h-4 transition-transform"
+              :class="{ 'rotate-180': broadcastOpen }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <div v-show="broadcastOpen" class="bg-gray-50">
+            <router-link
+              to="/broadcast-email"
+              class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-50 text-primary-600"
+            >
+              Send Broadcast
+            </router-link>
+            <router-link
+              to="/broadcast-email/drafts"
+              class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-50 text-primary-600"
+            >
+              Drafts
+            </router-link>
+            <router-link
+              to="/broadcast-email/history"
+              class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-50 text-primary-600"
+            >
+              History
+            </router-link>
+          </div>
+        </div>
+        
+        <!-- Settings Dropdown -->
+        <div>
+          <button
+            @click="settingsOpen = !settingsOpen"
+            class="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+            :class="{ 'bg-primary-50 text-primary-600': settingsOpen }"
+          >
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </div>
+            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': settingsOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <!-- Submenu -->
+          <div v-show="settingsOpen" class="bg-gray-50">
+            <router-link
+              v-if="user?.role === 'admin'"
+              to="/areas"
+              class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-100 text-primary-600"
+            >
+              <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Areas
+            </router-link>
+            <router-link
+              v-if="user?.role === 'admin'"
+              to="/sales"
+              class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-100 text-primary-600"
+            >
+              <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Sales
+            </router-link>
+            <router-link
+              to="/settings"
+              class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              active-class="bg-primary-100 text-primary-600"
+            >
+              <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              Email Config
+            </router-link>
+          </div>
+        </div>
       </nav>
     </aside>
 
@@ -116,29 +201,118 @@
               </svg>
               Customers
             </router-link>
-            <router-link
-              to="/areas"
-              class="flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-              active-class="bg-primary-50 text-primary-600 border-r-4 border-primary-600"
-              @click="sidebarOpen = false"
-            >
-              <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Areas
-            </router-link>
-            <router-link
-              to="/sales"
-              class="flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-              active-class="bg-primary-50 text-primary-600 border-r-4 border-primary-600"
-              @click="sidebarOpen = false"
-            >
-              <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              Sales
-            </router-link>
+            
+            <!-- Broadcast Email Dropdown Mobile -->
+            <div>
+              <button
+                @click="broadcastOpenMobile = !broadcastOpenMobile"
+                class="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                :class="{ 'bg-primary-50 text-primary-600': broadcastOpenMobile }"
+              >
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Broadcast Email
+                </div>
+                <svg
+                  class="w-4 h-4 transition-transform"
+                  :class="{ 'rotate-180': broadcastOpenMobile }"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              <div v-show="broadcastOpenMobile" class="bg-gray-50">
+                <router-link
+                  to="/broadcast-email"
+                  class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-50 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  Send Broadcast
+                </router-link>
+                <router-link
+                  to="/broadcast-email/drafts"
+                  class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-50 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  Drafts
+                </router-link>
+                <router-link
+                  to="/broadcast-email/history"
+                  class="flex items-center px-12 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-50 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  History
+                </router-link>
+              </div>
+            </div>
+            
+            <!-- Settings Dropdown Mobile -->
+            <div>
+              <button
+                @click="settingsOpenMobile = !settingsOpenMobile"
+                class="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                :class="{ 'bg-primary-50 text-primary-600': settingsOpenMobile }"
+              >
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Settings
+                </div>
+                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': settingsOpenMobile }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              <!-- Submenu Mobile -->
+              <div v-show="settingsOpenMobile" class="bg-gray-50">
+                <router-link
+                  v-if="user?.role === 'admin'"
+                  to="/areas"
+                  class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-100 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Areas
+                </router-link>
+                <router-link
+                  v-if="user?.role === 'admin'"
+                  to="/sales"
+                  class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-100 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  Sales
+                </router-link>
+                <router-link
+                  to="/settings"
+                  class="flex items-center px-6 py-2 pl-14 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                  active-class="bg-primary-100 text-primary-600"
+                  @click="sidebarOpen = false"
+                >
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Email Config
+                </router-link>
+              </div>
+            </div>
           </nav>
         </aside>
       </div>
@@ -161,6 +335,10 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const sidebarOpen = ref(false)
+const settingsOpen = ref(false)
+const broadcastOpen = ref(false)
+const settingsOpenMobile = ref(false)
+const broadcastOpenMobile = ref(false)
 
 const user = computed(() => authStore.user)
 

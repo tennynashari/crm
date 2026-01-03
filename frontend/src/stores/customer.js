@@ -30,7 +30,7 @@ export const useCustomerStore = defineStore('customer', {
           per_page: this.pagination.per_page,
           ...this.filters,
         }
-        const response = await api.get('/api/customers', { params })
+        const response = await api.get('/customers', { params })
         this.customers = response.data.data
         this.pagination = {
           current_page: response.data.current_page,
@@ -53,7 +53,7 @@ export const useCustomerStore = defineStore('customer', {
     async fetchCustomer(id) {
       this.loading = true
       try {
-        const response = await api.get(`/api/customers/${id}`)
+        const response = await api.get(`/customers/${id}`)
         this.currentCustomer = response.data
         return response.data
       } catch (error) {
@@ -66,7 +66,7 @@ export const useCustomerStore = defineStore('customer', {
     async createCustomer(data) {
       this.loading = true
       try {
-        const response = await api.post('/api/customers', data)
+        const response = await api.post('/customers', data)
         return response.data
       } catch (error) {
         throw error
@@ -78,7 +78,7 @@ export const useCustomerStore = defineStore('customer', {
     async updateCustomer(id, data) {
       this.loading = true
       try {
-        const response = await api.put(`/api/customers/${id}`, data)
+        const response = await api.put(`/customers/${id}`, data)
         return response.data
       } catch (error) {
         throw error
@@ -90,7 +90,7 @@ export const useCustomerStore = defineStore('customer', {
     async deleteCustomer(id) {
       this.loading = true
       try {
-        const response = await api.delete(`/api/customers/${id}`)
+        const response = await api.delete(`/customers/${id}`)
         return response.data
       } catch (error) {
         throw error
@@ -102,7 +102,7 @@ export const useCustomerStore = defineStore('customer', {
     async updateNextAction(id, data) {
       this.loading = true
       try {
-        const response = await api.post(`/api/customers/${id}/next-action`, data)
+        const response = await api.post(`/customers/${id}/next-action`, data)
         return response.data
       } catch (error) {
         throw error

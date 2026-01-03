@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\LeadStatusController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\EmailSettingController;
+use App\Http\Controllers\Api\EmailController;
+use App\Http\Controllers\Api\BroadcastEmailController;
 
 // CSRF cookie route - MUST be in api.php with web middleware
 Route::get('/csrf-cookie', function () {
@@ -70,4 +73,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Lead Statuses
     Route::apiResource('lead-statuses', LeadStatusController::class);
+
+    // Email Settings
+    Route::get('/email-settings', [EmailSettingController::class, 'show']);
+    Route::post('/email-settings', [EmailSettingController::class, 'store']);
+    Route::put('/email-settings', [EmailSettingController::class, 'update']);
+
+    // Send Email
+    Route::post('/send-email', [EmailController::class, 'send']);
+
+    // Broadcast Email
+    Route::post('/broadcast-email/recipients', [BroadcastEmailController::class, 'getRecipients']);
+    Route::post('/broadcast-email/send', [BroadcastEmailController::class, 'send']);
+    Route::get('/broadcast-email/history', [BroadcastEmailController::class, 'history']);
+    
+    // Broadcast Email Drafts
+    Route::get('/broadcast-email/drafts', [BroadcastEmailController::class, 'getDrafts']);
+    Route::get('/broadcast-email/drafts/{id}', [BroadcastEmailController::class, 'getDraft']);
+    Route::post('/broadcast-email/drafts', [BroadcastEmailController::class, 'saveDraft']);
+    Route::put('/broadcast-email/drafts/{id}', [BroadcastEmailController::class, 'updateDraft']);
+    Route::delete('/broadcast-email/drafts/{id}', [BroadcastEmailController::class, 'deleteDraft']);
 });

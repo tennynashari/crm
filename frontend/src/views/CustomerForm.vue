@@ -163,6 +163,7 @@ import { useCustomerStore } from '@/stores/customer'
 import { useAreaStore } from '@/stores/area'
 import { useLeadStatusStore } from '@/stores/leadStatus'
 import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -170,7 +171,9 @@ const customerStore = useCustomerStore()
 const areaStore = useAreaStore()
 const leadStatusStore = useLeadStatusStore()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 
+const currentUser = computed(() => authStore.user)
 const isEditMode = computed(() => !!route.params.id)
 
 const form = ref({
@@ -205,7 +208,7 @@ const handleSubmit = async () => {
     } else {
       const response = await customerStore.createCustomer(form.value)
       alert('Customer created successfully!')
-      router.push(`/customers/${response.customer.id}`)
+      router.push('/customers')
     }
   } catch (err) {
     error.value = err.response?.data?.message || `Failed to ${isEditMode.value ? 'update' : 'create'} customer`
@@ -221,7 +224,16 @@ onMounted(async () => {
   // Fetch sales users
   try {
     const users = await userStore.fetchSalesUsers()
-    salesUsers.value = users
+    // Filter berdasarkan role:
+    // - Admin: lihat semua sales
+    // - Sales: hanya lihat dirinya sendiri
+    
+    if (currentUser.value?.role === 'admin') {
+      salesUsers.value = users
+    } else {
+      // User sales hanya bisa lihat dirinya sendiri
+      salesUsers.value = users.filter(user => user.id === currentUser.value?.id)
+    }
   } catch (error) {
     console.error('Failed to load sales users:', error)
   }

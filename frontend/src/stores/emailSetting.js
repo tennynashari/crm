@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
 import api from '@/api/axios'
 
-export const useAreaStore = defineStore('area', {
+export const useEmailSettingStore = defineStore('emailSetting', {
   state: () => ({
-    areas: [],
+    settings: null,
     loading: false,
   }),
 
   actions: {
-    async fetchAreas() {
+    async fetchSettings() {
       this.loading = true
       try {
-        const response = await api.get('/areas')
-        this.areas = response.data
+        const response = await api.get('/email-settings')
+        this.settings = response.data
         return response.data
       } catch (error) {
         throw error
@@ -21,10 +21,11 @@ export const useAreaStore = defineStore('area', {
       }
     },
 
-    async fetchArea(id) {
+    async saveSettings(data) {
       this.loading = true
       try {
-        const response = await api.get(`/areas/${id}`)
+        const response = await api.post('/email-settings', data)
+        this.settings = response.data.setting
         return response.data
       } catch (error) {
         throw error
@@ -33,11 +34,11 @@ export const useAreaStore = defineStore('area', {
       }
     },
 
-    async createArea(data) {
+    async updateSettings(data) {
       this.loading = true
       try {
-        const response = await api.post('/areas', data)
-        this.areas.push(response.data)
+        const response = await api.put('/email-settings', data)
+        this.settings = response.data.setting
         return response.data
       } catch (error) {
         throw error
@@ -46,14 +47,10 @@ export const useAreaStore = defineStore('area', {
       }
     },
 
-    async updateArea(id, data) {
+    async sendEmail(data) {
       this.loading = true
       try {
-        const response = await api.put(`/areas/${id}`, data)
-        const index = this.areas.findIndex(a => a.id === id)
-        if (index !== -1) {
-          this.areas[index] = response.data
-        }
+        const response = await api.post('/send-email', data)
         return response.data
       } catch (error) {
         throw error
@@ -62,11 +59,15 @@ export const useAreaStore = defineStore('area', {
       }
     },
 
-    async deleteArea(id) {
+    async sendEmailWithAttachments(formData) {
       this.loading = true
       try {
-        await api.delete(`/areas/${id}`)
-        this.areas = this.areas.filter(a => a.id !== id)
+        const response = await api.post('/send-email', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        return response.data
       } catch (error) {
         throw error
       } finally {

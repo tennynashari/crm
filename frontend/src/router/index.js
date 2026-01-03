@@ -68,6 +68,26 @@ const routes = [
         name: 'SalesEdit',
         component: () => import('@/views/SalesForm.vue'),
       },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/views/Settings.vue'),
+      },
+      {
+        path: 'broadcast-email',
+        name: 'BroadcastEmail',
+        component: () => import('@/views/BroadcastEmail.vue'),
+      },
+      {
+        path: 'broadcast-email/drafts',
+        name: 'BroadcastEmailDrafts',
+        component: () => import('@/views/BroadcastEmailDrafts.vue'),
+      },
+      {
+        path: 'broadcast-email/history',
+        name: 'BroadcastEmailHistory',
+        component: () => import('@/views/BroadcastEmailHistory.vue'),
+      },
     ],
   },
 ]
