@@ -2,7 +2,15 @@
 
 Aplikasi CRM berbasis web untuk mengelola database customer & lead, mencatat komunikasi email otomatis dan multi-channel communication, dengan fitur Next Action tracking dan Area management.
 
-## 🚀 Technology Stack
+## � Documentation
+
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Panduan lengkap deploy ke Ubuntu 24.04
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Checklist step-by-step deployment
+- **[Command Reference](COMMANDS.md)** - Quick reference semua commands
+- **[API Documentation](API_DOCUMENTATION.md)** - API endpoints documentation
+- **[Quick Start](QUICK_START.md)** - Getting started guide
+
+## �🚀 Technology Stack
 
 ### Backend
 - **Laravel 10** - PHP Framework
@@ -23,7 +31,32 @@ Aplikasi CRM berbasis web untuk mengelola database customer & lead, mencatat kom
 - Node.js >= 18
 - PostgreSQL >= 13
 
-## 🛠️ Installation
+## 🌐 Production Deployment
+
+**Untuk deploy ke production server (Ubuntu 24.04), gunakan dokumentasi berikut:**
+
+### Option 1: Automated Deployment (Recommended) ⚡
+```bash
+# Upload kode ke server, lalu jalankan:
+sudo bash deploy.sh          # Install semua dependencies
+sudo bash setup-app.sh       # Setup aplikasi
+```
+
+### Option 2: Manual Deployment 📖
+Ikuti panduan lengkap di **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**
+
+**Includes:**
+- ✅ PostgreSQL installation & configuration
+- ✅ PHP 8.3 + Nginx setup
+- ✅ Node.js installation
+- ✅ SSL/HTTPS with Let's Encrypt
+- ✅ Firewall configuration
+- ✅ Process manager (Supervisor)
+- ✅ Backup & monitoring setup
+
+---
+
+## 🛠️ Local Development Installation
 
 ### 1. Setup Database
 

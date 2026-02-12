@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\EmailSettingController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\BroadcastEmailController;
+use App\Http\Controllers\Api\InvoiceController;
 
 // CSRF cookie route - MUST be in api.php with web middleware
 Route::get('/csrf-cookie', function () {
@@ -67,6 +68,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Interactions
     Route::apiResource('interactions', InteractionController::class);
+
+    // Invoices
+    Route::apiResource('invoices', InvoiceController::class);
 
     // Areas
     Route::apiResource('areas', AreaController::class);

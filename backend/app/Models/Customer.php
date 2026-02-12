@@ -59,6 +59,11 @@ class Customer extends Model
         return $this->hasMany(Interaction::class);
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function emails()
     {
         return $this->hasMany(Email::class);

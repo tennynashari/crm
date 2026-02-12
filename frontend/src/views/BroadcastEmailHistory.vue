@@ -116,7 +116,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/api/axios'
 
 const history = ref([])
 const loading = ref(false)
@@ -166,7 +166,7 @@ const toggleRecipients = (id) => {
 const fetchHistory = async () => {
   loading.value = true
   try {
-    const response = await axios.get('/broadcast-email/history')
+    const response = await api.get('/broadcast-email/history')
     history.value = response.data
   } catch (error) {
     console.error('Failed to fetch broadcast history:', error)

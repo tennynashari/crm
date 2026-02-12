@@ -334,6 +334,130 @@
       </div>
     </div>
 
+    <!-- Sales / Invoices Section -->
+    <div class="card">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">Sales History</h3>
+        <button
+          @click="showInvoiceModal = true"
+          class="btn btn-primary btn-sm"
+        >
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Invoice
+        </button>
+      </div>
+
+      <div v-if="invoices && invoices.length > 0" class="space-y-3">
+        <div
+          v-for="invoice in invoices"
+          :key="invoice.id"
+          class="border rounded-lg p-4 hover:border-primary-300 transition-colors"
+        >
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-semibold text-gray-900">{{ invoice.invoice_number }}</span>
+                <span
+                  class="badge text-xs"
+                  :class="{
+                    'bg-gray-100 text-gray-800': invoice.status === 'draft',
+                    'bg-blue-100 text-blue-800': invoice.status === 'sent',
+                    'bg-green-100 text-green-800': invoice.status === 'paid',
+                    'bg-red-100 text-red-800': invoice.status === 'cancelled',
+                  }"
+                >
+                  {{ invoice.status.toUpperCase() }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-600 mt-1">
+                {{ formatDate(invoice.invoice_date) }}
+                <span v-if="invoice.due_date"> - Due: {{ formatDate(invoice.due_date) }}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-gray-900">
+                Rp {{ formatNumber(invoice.total) }}
+              </div>
+              <div class="flex items-center space-x-1 mt-1">
+                <button
+                  type="button"
+                  @click="editInvoice(invoice)"
+                  class="text-blue-600 hover:text-blue-800 p-1"
+                  title="Edit invoice"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  @click="deleteInvoice(invoice.id)"
+                  class="text-red-600 hover:text-red-800 p-1"
+                  title="Delete invoice"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Items -->
+          <div class="mt-3 pt-3 border-t">
+            <div class="text-xs font-medium text-gray-600 mb-2">Items:</div>
+            <div class="space-y-1">
+              <div
+                v-for="item in invoice.items"
+                :key="item.id"
+                class="flex justify-between text-sm"
+              >
+                <div>
+                  <span class="text-gray-900">{{ item.item_name }}</span>
+                  <span v-if="item.description" class="text-gray-500 text-xs ml-1">({{ item.description }})</span>
+                  <span class="text-gray-600 ml-2">x{{ item.quantity }}</span>
+                </div>
+                <span class="text-gray-900">Rp {{ formatNumber(item.total_price) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="invoice.notes" class="mt-2 text-sm text-gray-600 italic">
+            Note: {{ invoice.notes }}
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="invoicePagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-6 pt-4 border-t">
+          <button
+            @click="changeInvoicePage(invoicePagination.current_page - 1)"
+            :disabled="invoicePagination.current_page === 1"
+            class="px-3 py-1 rounded border text-sm"
+            :class="invoicePagination.current_page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600">
+            Page {{ invoicePagination.current_page }} of {{ invoicePagination.last_page }}
+          </span>
+          <button
+            @click="changeInvoicePage(invoicePagination.current_page + 1)"
+            :disabled="invoicePagination.current_page === invoicePagination.last_page"
+            class="px-3 py-1 rounded border text-sm"
+            :class="invoicePagination.current_page === invoicePagination.last_page ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="text-center text-gray-500 py-8">
+        No sales history yet
+      </div>
+    </div>
+
     <!-- Add/Edit Interaction Modal -->
     <div
       v-if="showInteractionModal"
@@ -527,6 +651,218 @@
         </form>
       </div>
     </div>
+
+    <!-- Add/Edit Invoice Modal -->
+    <div
+      v-if="showInvoiceModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click.self="closeInvoiceModal"
+    >
+      <div class="bg-white rounded-lg max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold mb-4">
+          {{ editingInvoice ? 'Edit' : 'Add' }} Invoice
+        </h3>
+        
+        <form @submit.prevent="editingInvoice ? updateInvoice() : addInvoice()" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Invoice Number
+                <span v-if="!editingInvoice" class="text-xs text-gray-500">(auto-generate if empty)</span>
+              </label>
+              <input
+                v-model="invoiceForm.invoice_number"
+                type="text"
+                placeholder="INV-20260208-0001"
+                class="input"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date *</label>
+              <input
+                v-model="invoiceForm.invoice_date"
+                type="date"
+                required
+                class="input"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+              <input
+                v-model="invoiceForm.due_date"
+                type="date"
+                class="input"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+              <select v-model="invoiceForm.status" required class="input">
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Invoice Items -->
+          <div class="border-t pt-4">
+            <div class="flex justify-between items-center mb-3">
+              <label class="block text-sm font-medium text-gray-700">Invoice Items *</label>
+              <button
+                type="button"
+                @click="addInvoiceItem"
+                class="text-sm text-primary-600 hover:text-primary-700 flex items-center"
+              >
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Item
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div
+                v-for="(item, index) in invoiceForm.items"
+                :key="index"
+                class="border rounded p-3 bg-gray-50"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-sm font-medium text-gray-700">Item {{ index + 1 }}</span>
+                  <button
+                    type="button"
+                    @click="removeInvoiceItem(index)"
+                   class="text-red-600 hover:text-red-800"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      v-model="item.item_name"
+                      type="text"
+                      placeholder="Item name *"
+                      required
+                      class="input text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      v-model="item.description"
+                      type="text"
+                      placeholder="Description (optional)"
+                      class="input text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      v-model.number="item.quantity"
+                      type="number"
+                      min="1"
+                      placeholder="Quantity *"
+                      required
+                      class="input text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      v-model.number="item.unit_price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Unit price *"
+                      required
+                      class="input text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div class="mt-2 text-right text-sm font-medium text-gray-700">
+                  Subtotal: Rp {{ formatNumber((item.quantity || 0) * (item.unit_price || 0)) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="border-t pt-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tax</label>
+                <input
+                  v-model.number="invoiceForm.tax"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="input"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                <input
+                  v-model.number="invoiceForm.discount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="input"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-gray-100 rounded">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="text-gray-900">Rp {{ formatNumber(calculateSubtotal()) }}</span>
+              </div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">Tax:</span>
+                <span class="text-gray-900">Rp {{ formatNumber(invoiceForm.tax || 0) }}</span>
+              </div>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-600">Discount:</span>
+                <span class="text-gray-900">- Rp {{ formatNumber(invoiceForm.discount || 0) }}</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold border-t pt-2">
+                <span>Total:</span>
+                <span>Rp {{ formatNumber(calculateTotal()) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea
+              v-model="invoiceForm.notes"
+              rows="3"
+              class="input"
+              placeholder="Additional notes for this invoice"
+            ></textarea>
+          </div>
+
+          <div class="flex space-x-3">
+            <button type="submit" class="btn btn-primary flex-1">
+              {{ editingInvoice ? 'Update' : 'Save' }} Invoice
+            </button>
+            <button
+              type="button"
+              @click="closeInvoiceModal"
+              class="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -539,6 +875,7 @@ import { useContactStore } from '@/stores/contact'
 import { useAreaStore } from '@/stores/area'
 import { useLeadStatusStore } from '@/stores/leadStatus'
 import { useEmailSettingStore } from '@/stores/emailSetting'
+import { useInvoiceStore } from '@/stores/invoice'
 import EmailEditor from '@/components/EmailEditor.vue'
 
 const route = useRoute()
@@ -549,6 +886,7 @@ const contactStore = useContactStore()
 const areaStore = useAreaStore()
 const leadStatusStore = useLeadStatusStore()
 const emailSettingStore = useEmailSettingStore()
+const invoiceStore = useInvoiceStore()
 
 const customer = computed(() => customerStore.currentCustomer)
 const loading = computed(() => customerStore.loading)
@@ -598,6 +936,29 @@ const emailForm = ref({
 
 const emailFiles = ref([])
 const sendingEmail = ref(false)
+
+// Invoice data
+const invoices = ref([])
+const invoicePagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 10,
+  total: 0,
+})
+const showInvoiceModal = ref(false)
+const editingInvoice = ref(null)
+const invoiceForm = ref({
+  invoice_number: '',
+  invoice_date: '',
+  due_date: '',
+  status: 'draft',
+  tax: 0,
+  discount: 0,
+  notes: '',
+  items: [
+    { item_name: '', description: '', quantity: 1, unit_price: 0 }
+  ],
+})
 
 const openEmailModal = () => {
   // Auto-fill email: company email + all PIC emails
@@ -884,12 +1245,157 @@ const closeContactModal = () => {
   }
 }
 
+// Invoice functions
+const fetchInvoices = async (page = 1) => {
+  try {
+    const response = await invoiceStore.fetchInvoices({
+      customer_id: route.params.id,
+      page,
+      per_page: 10,
+    })
+    invoices.value = response.data
+    invoicePagination.value = {
+      current_page: response.current_page,
+      last_page: response.last_page,
+      per_page: response.per_page,
+      total: response.total,
+    }
+  } catch (error) {
+    console.error('Error fetching invoices:', error)
+  }
+}
+
+const changeInvoicePage = (page) => {
+  if (page >= 1 && page <= invoicePagination.value.last_page) {
+    fetchInvoices(page)
+  }
+}
+
+const addInvoiceItem = () => {
+  invoiceForm.value.items.push({
+    item_name: '',
+    description: '',
+    quantity: 1,
+    unit_price: 0,
+  })
+}
+
+const removeInvoiceItem = (index) => {
+  if (invoiceForm.value.items.length > 1) {
+    invoiceForm.value.items.splice(index, 1)
+  }
+}
+
+const calculateSubtotal = () => {
+  return invoiceForm.value.items.reduce((sum, item) => {
+    return sum + ((item.quantity || 0) * (item.unit_price || 0))
+  }, 0)
+}
+
+const calculateTotal = () => {
+  const subtotal = calculateSubtotal()
+  const tax = invoiceForm.value.tax || 0
+  const discount = invoiceForm.value.discount || 0
+  return subtotal + tax - discount
+}
+
+const addInvoice = async () => {
+  try {
+    await invoiceStore.createInvoice({
+      customer_id: customer.value.id,
+      ...invoiceForm.value,
+    })
+    closeInvoiceModal()
+    alert('Invoice created successfully')
+    await fetchInvoices(invoicePagination.value.current_page)
+  } catch (error) {
+    alert('Failed to create invoice: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+const editInvoice = (invoice) => {
+  editingInvoice.value = invoice
+  invoiceForm.value = {
+    invoice_number: invoice.invoice_number || '',
+    invoice_date: invoice.invoice_date,
+    due_date: invoice.due_date || '',
+    status: invoice.status,
+    tax: parseFloat(invoice.tax) || 0,
+    discount: parseFloat(invoice.discount) || 0,
+    notes: invoice.notes || '',
+    items: invoice.items.map(item => ({
+      item_name: item.item_name,
+      description: item.description || '',
+      quantity: item.quantity,
+      unit_price: parseFloat(item.unit_price),
+    })),
+  }
+  showInvoiceModal.value = true
+}
+
+const updateInvoice = async () => {
+  try {
+    await invoiceStore.updateInvoice(editingInvoice.value.id, {
+      ...invoiceForm.value,
+    })
+    closeInvoiceModal()
+    alert('Invoice updated successfully')
+    await fetchInvoices(invoicePagination.value.current_page)
+  } catch (error) {
+    alert('Failed to update invoice: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+const deleteInvoice = async (invoiceId) => {
+  if (!confirm('Are you sure you want to delete this invoice?')) {
+    return
+  }
+
+  try {
+    await invoiceStore.deleteInvoice(invoiceId)
+    alert('Invoice deleted successfully')
+    await fetchInvoices(invoicePagination.value.current_page)
+  } catch (error) {
+    alert('Failed to delete invoice')
+  }
+}
+
+const closeInvoiceModal = () => {
+  showInvoiceModal.value = false
+  editingInvoice.value = null
+  invoiceForm.value = {
+    invoice_number: '',
+    invoice_date: '',
+    due_date: '',
+    status: 'draft',
+    tax: 0,
+    discount: 0,
+    notes: '',
+    items: [
+      { item_name: '', description: '', quantity: 1, unit_price: 0 }
+    ],
+  }
+}
+
+const formatNumber = (number) => {
+  return new Intl.NumberFormat('id-ID').format(number)
+}
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
 onMounted(async () => {
   await Promise.all([
     customerStore.fetchCustomer(route.params.id),
     areaStore.fetchAreas(),
     leadStatusStore.fetchStatuses(),
     fetchInteractions(1),
+    fetchInvoices(1),
   ])
 
   // Initialize next action form
