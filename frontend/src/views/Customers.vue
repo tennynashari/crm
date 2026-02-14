@@ -2,15 +2,31 @@
   <div>
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
       <h1 class="text-3xl font-bold text-gray-800 mb-4 lg:mb-0">Customers</h1>
-      <router-link
-        to="/customers/create"
-        class="btn btn-primary inline-flex items-center justify-center"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Add Customer
-      </router-link>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button
+          @click="exportToExcel"
+          :disabled="exportLoading"
+          class="btn btn-secondary inline-flex items-center justify-center"
+        >
+          <svg v-if="!exportLoading" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <svg v-else class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ exportLoading ? 'Exporting...' : 'Export Excel' }}
+        </button>
+        <router-link
+          to="/customers/create"
+          class="btn btn-primary inline-flex items-center justify-center"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Customer
+        </router-link>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -248,6 +264,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
 import { useAreaStore } from '@/stores/area'
 import { useLeadStatusStore } from '@/stores/leadStatus'
+import api from '@/api/axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -261,6 +278,8 @@ const loading = computed(() => customerStore.loading)
 
 const areas = computed(() => areaStore.areas)
 const statuses = computed(() => leadStatusStore.statuses)
+
+const exportLoading = ref(false)
 
 const filters = ref({
   search: '',
@@ -298,6 +317,57 @@ const formatDate = (date) => {
     month: 'short',
     day: 'numeric',
   })
+}
+
+const exportToExcel = async () => {
+  try {
+    exportLoading.value = true
+    
+    // Build query params from current filters
+    const params = new URLSearchParams()
+    
+    if (filters.value.search) params.append('search', filters.value.search)
+    if (filters.value.area_id) params.append('area_id', filters.value.area_id)
+    if (filters.value.lead_status_id) params.append('lead_status_id', filters.value.lead_status_id)
+    if (filters.value.source) params.append('source', filters.value.source)
+    if (filters.value.next_action_status) params.append('next_action_status', filters.value.next_action_status)
+    
+    // Request file with blob response type
+    const response = await api.get(`/customers/export?${params.toString()}`, {
+      responseType: 'blob'
+    })
+    
+    // Create blob link and trigger download
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    
+    // Extract filename from Content-Disposition header or use default
+    const contentDisposition = response.headers['content-disposition']
+    let filename = 'customers_export.xlsx'
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
+      if (filenameMatch && filenameMatch.length > 1) {
+        filename = filenameMatch[1]
+      }
+    }
+    
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    
+    // Cleanup
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    
+    console.log('Export completed successfully')
+  } catch (error) {
+    console.error('Error exporting customers:', error)
+    alert('Failed to export customers. Please try again.')
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 const formatDateTime = (datetime) => {

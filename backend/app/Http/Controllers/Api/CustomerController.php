@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Interaction;
 use App\Models\AuditLog;
+use App\Exports\CustomersExport;
+use App\Exports\CustomerDetailExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
@@ -245,5 +248,45 @@ class CustomerController extends Controller
             'customer' => $customer,
             'message' => 'Next action updated successfully',
         ]);
+    }
+
+    /**
+     * Export customers to Excel
+     */
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Get filters from request
+        $filters = $request->only([
+            'area_id',
+            'lead_status_id',
+            'assigned_sales_id',
+            'source',
+            'search',
+            'next_action_status'
+        ]);
+
+        $fileName = 'customers_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new CustomersExport($filters, $user),
+            $fileName
+        );
+    }
+
+    /**
+     * Export single customer detail to Excel
+     */
+    public function exportDetail($id)
+    {
+        $customer = Customer::findOrFail($id);
+        
+        $fileName = 'customer_' . $customer->id . '_' . str_replace(' ', '_', $customer->company) . '_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new CustomerDetailExport($id),
+            $fileName
+        );
     }
 }

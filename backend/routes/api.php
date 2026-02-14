@@ -60,6 +60,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('users', UserController::class);
 
     // Customers
+    Route::get('/customers/export', [CustomerController::class, 'export']);
+    Route::get('/customers/{id}/export', [CustomerController::class, 'exportDetail']);
     Route::apiResource('customers', CustomerController::class);
     Route::post('/customers/{id}/next-action', [CustomerController::class, 'updateNextAction']);
 

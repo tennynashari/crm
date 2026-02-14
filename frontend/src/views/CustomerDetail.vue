@@ -17,6 +17,18 @@
         <span v-if="customer.is_individual" class="text-sm text-gray-500 font-normal ml-2">(Individual)</span>
       </h1>
       <div class="flex space-x-2">
+        <button
+          @click="exportToExcel"
+          :disabled="exportLoading"
+          class="btn bg-green-600 hover:bg-green-700 text-white"
+          title="Export customer detail to Excel"
+        >
+          <svg v-if="!exportLoading" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span v-if="exportLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></span>
+          {{ exportLoading ? 'Exporting...' : 'Export' }}
+        </button>
         <router-link
           :to="`/customers/${customer.id}/edit`"
           class="btn btn-secondary"
@@ -877,6 +889,7 @@ import { useLeadStatusStore } from '@/stores/leadStatus'
 import { useEmailSettingStore } from '@/stores/emailSetting'
 import { useInvoiceStore } from '@/stores/invoice'
 import EmailEditor from '@/components/EmailEditor.vue'
+import api from '@/api/axios'
 
 const route = useRoute()
 const router = useRouter()
@@ -947,6 +960,7 @@ const invoicePagination = ref({
 })
 const showInvoiceModal = ref(false)
 const editingInvoice = ref(null)
+const exportLoading = ref(false)
 const invoiceForm = ref({
   invoice_number: '',
   invoice_date: '',
@@ -1387,6 +1401,41 @@ const formatDate = (date) => {
     month: 'short',
     day: 'numeric',
   })
+}
+
+const exportToExcel = async () => {
+  exportLoading.value = true
+  try {
+    const response = await api.get(`/customers/${route.params.id}/export`, {
+      responseType: 'blob'
+    })
+
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers['content-disposition']
+    let filename = `customer_${customer.value.company}_${new Date().toISOString().split('T')[0]}.xlsx`
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1]
+      }
+    }
+
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error exporting customer detail:', error)
+    alert('Failed to export customer detail. Please try again.')
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 onMounted(async () => {
