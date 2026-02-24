@@ -1,39 +1,39 @@
 <template>
   <div class="max-w-5xl mx-auto">
-    <h1 class="text-2xl font-semibold text-gray-900 mb-6">Broadcast Email</h1>
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">{{ $t('broadcastEmail.title') }}</h1>
 
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Filter Section -->
       <div class="mb-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Select Recipients</h2>
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{{ $t('broadcastEmail.selectRecipients') }}</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Filter Type -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Filter By
+              {{ $t('broadcastEmail.filterBy') }}
             </label>
             <select
               v-model="filterType"
               @change="handleFilterChange"
               class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
-              <option value="all">All Companies</option>
-              <option value="area">By Area</option>
+              <option value="all">{{ $t('broadcastEmail.allCompanies') }}</option>
+              <option value="area">{{ $t('broadcastEmail.byArea') }}</option>
             </select>
           </div>
 
           <!-- Area Selection -->
           <div v-if="filterType === 'area'">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Select Area
+              {{ $t('broadcastEmail.selectArea') }}
             </label>
             <select
               v-model="selectedAreaId"
               @change="loadRecipients"
               class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
-              <option value="">-- Select Area --</option>
+              <option value="">{{ $t('broadcastEmail.selectAreaPlaceholder') }}</option>
               <option v-for="area in areas" :key="area.id" :value="area.id">
                 {{ area.name }}
               </option>
@@ -47,8 +47,8 @@
           :disabled="loadingRecipients || (filterType === 'area' && !selectedAreaId)"
           class="mt-4 btn btn-secondary"
         >
-          <span v-if="loadingRecipients">Loading...</span>
-          <span v-else>Load Recipients ({{ recipientCount }})</span>
+          <span v-if="loadingRecipients">{{ $t('broadcastEmail.loading') }}</span>
+          <span v-else>{{ $t('broadcastEmail.loadRecipients') }} ({{ recipientCount }})</span>
         </button>
       </div>
 
@@ -56,14 +56,14 @@
       <div v-if="recipients.length > 0" class="mb-6">
         <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
           <h3 class="text-sm font-medium text-blue-900 mb-2">
-            Recipients Preview ({{ recipientCount }} emails)
+            {{ $t('broadcastEmail.recipientsPreview') }} ({{ recipientCount }} {{ $t('broadcastEmail.emails') }})
           </h3>
           <div class="max-h-40 overflow-y-auto">
             <div v-for="(recipient, index) in recipients.slice(0, 20)" :key="index" class="text-sm text-blue-800">
               {{ recipient.email }} - {{ recipient.type }}
             </div>
             <div v-if="recipients.length > 20" class="text-sm text-blue-600 italic mt-2">
-              ... and {{ recipients.length - 20 }} more
+              ... {{ $t('broadcastEmail.andMore', { count: recipients.length - 20 }) }}
             </div>
           </div>
         </div>
@@ -71,25 +71,25 @@
 
       <!-- Email Editor -->
       <div class="space-y-4">
-        <h2 class="text-lg font-medium text-gray-900">Compose Email</h2>
+        <h2 class="text-lg font-medium text-gray-900">{{ $t('broadcastEmail.composeEmail') }}</h2>
 
         <!-- Remove To field since it's broadcast, only show Subject and Body with editor -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Subject <span class="text-red-500">*</span>
+            {{ $t('broadcastEmail.subject') }} <span class="text-red-500">{{ $t('broadcastEmail.required') }}</span>
           </label>
           <input
             v-model="emailForm.subject"
             type="text"
             required
             class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder="Enter email subject"
+            :placeholder="$t('broadcastEmail.subjectPlaceholder')"
           />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Message <span class="text-red-500">*</span>
+            {{ $t('broadcastEmail.message') }} <span class="text-red-500">{{ $t('broadcastEmail.required') }}</span>
           </label>
           <div class="border rounded-md">
             <QuillEditor
@@ -105,7 +105,7 @@
         <!-- File Attachments -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Attachments (Optional)
+            {{ $t('broadcastEmail.attachments') }}
           </label>
           <input
             type="file"
@@ -122,9 +122,9 @@
             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
-            Attach Files
+            {{ $t('broadcastEmail.attachFiles') }}
           </button>
-          <p class="mt-1 text-xs text-gray-500">Maximum 10MB per file</p>
+          <p class="mt-1 text-xs text-gray-500">{{ $t('broadcastEmail.maxFileSize') }}</p>
           
           <!-- File List -->
           <div v-if="emailFiles.length > 0" class="mt-3 space-y-2">
@@ -165,9 +165,9 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Saving...
+              {{ $t('broadcastEmail.saving') }}
             </span>
-            <span v-else>💾 Save as Draft</span>
+            <span v-else>💾 {{ $t('broadcastEmail.saveDraft') }}</span>
           </button>
           <button
             @click="sendBroadcast"
@@ -179,9 +179,9 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Sending...
+              {{ $t('broadcastEmail.sending') }}
             </span>
-            <span v-else>Send Broadcast Email ({{ recipientCount }})</span>
+            <span v-else>{{ $t('broadcastEmail.sendBroadcast') }} ({{ recipientCount }})</span>
           </button>
         </div>
       </div>

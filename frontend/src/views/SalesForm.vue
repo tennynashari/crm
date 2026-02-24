@@ -8,21 +8,21 @@
         </svg>
       </button>
       <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">
-        {{ isEditMode ? 'Edit' : 'Add' }} Sales
+        {{ isEditMode ? $t('sales.editSales') : $t('sales.addSales') }}
       </h1>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-2 text-gray-600">Loading...</p>
+      <p class="mt-2 text-gray-600">{{ $t('sales.loading') }}</p>
     </div>
 
     <!-- Form -->
     <form v-else @submit.prevent="handleSubmit" class="card space-y-6">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-          Full Name <span class="text-red-500">*</span>
+          {{ $t('sales.fullName') }} <span class="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -30,13 +30,13 @@
           type="text"
           required
           class="input"
-          placeholder="e.g., John Doe"
+          :placeholder="$t('sales.fullNamePlaceholder')"
         />
       </div>
 
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-          Email <span class="text-red-500">*</span>
+          {{ $t('sales.email') }} <span class="text-red-500">*</span>
         </label>
         <input
           id="email"
@@ -44,13 +44,13 @@
           type="email"
           required
           class="input"
-          placeholder="e.g., john@flowcrm.test"
+          :placeholder="$t('sales.emailPlaceholder')"
         />
       </div>
 
       <div v-if="!isEditMode">
         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-          Password <span class="text-red-500">*</span>
+          {{ $t('sales.password') }} <span class="text-red-500">*</span>
         </label>
         <input
           id="password"
@@ -59,13 +59,13 @@
           required
           minlength="8"
           class="input"
-          placeholder="Minimum 8 characters"
+          :placeholder="$t('sales.passwordPlaceholder')"
         />
       </div>
 
       <div v-else>
         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-          New Password <span class="text-gray-500">(leave blank to keep current)</span>
+          {{ $t('sales.newPassword') }} <span class="text-gray-500">({{ $t('sales.passwordHelp') }})</span>
         </label>
         <input
           id="password"
@@ -73,7 +73,7 @@
           type="password"
           minlength="8"
           class="input"
-          placeholder="Minimum 8 characters"
+          :placeholder="$t('sales.newPasswordPlaceholder')"
         />
       </div>
 
@@ -84,13 +84,13 @@
             type="checkbox"
             class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
           />
-          <span class="ml-2 text-sm text-gray-700">Active</span>
+          <span class="ml-2 text-sm text-gray-700">{{ $t('sales.activeUser') }}</span>
         </label>
       </div>
 
       <div class="flex space-x-3">
         <button type="submit" class="btn btn-primary flex-1" :disabled="submitting">
-          {{ submitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }} Sales
+          {{ submitting ? $t('sales.saving') : (isEditMode ? $t('sales.update') : $t('sales.create')) }} {{ $t('sales.sales') }}
         </button>
         <button
           type="button"
@@ -98,7 +98,7 @@
           class="btn btn-secondary"
           :disabled="submitting"
         >
-          Cancel
+          {{ $t('sales.cancel') }}
         </button>
       </div>
     </form>
@@ -107,9 +107,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -139,14 +141,14 @@ const handleSubmit = async () => {
 
     if (isEditMode.value) {
       await userStore.updateUser(route.params.id, data)
-      alert('Sales user updated successfully')
+      alert(t('sales.updateSuccess'))
     } else {
       await userStore.createUser(data)
-      alert('Sales user created successfully')
+      alert(t('sales.createSuccess'))
     }
     router.push('/sales')
   } catch (error) {
-    const errorMsg = error.response?.data?.message || `Failed to ${isEditMode.value ? 'update' : 'create'} sales user`
+    const errorMsg = error.response?.data?.message || t('sales.saveError')
     alert(errorMsg)
   } finally {
     submitting.value = false
@@ -166,7 +168,7 @@ onMounted(async () => {
         is_active: user.is_active ?? true,
       }
     } catch (error) {
-      alert('Failed to load sales user')
+      alert(t('sales.loadError'))
       router.push('/sales')
     } finally {
       loading.value = false

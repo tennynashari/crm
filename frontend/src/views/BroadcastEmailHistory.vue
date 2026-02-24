@@ -1,19 +1,19 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Broadcast Email History</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('broadcastEmail.historyTitle') }}</h1>
 
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-2 text-gray-600">Loading...</p>
+      <p class="mt-2 text-gray-600">{{ $t('broadcastEmail.loading') }}</p>
     </div>
 
     <div v-else-if="history.length === 0" class="text-center py-12">
       <svg class="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
-      <p class="text-gray-600 text-lg mb-4">No broadcast email history yet</p>
+      <p class="text-gray-600 text-lg mb-4">{{ $t('broadcastEmail.noHistory') }}</p>
       <router-link to="/broadcast-email" class="btn btn-primary">
-        Send Your First Broadcast
+        {{ $t('broadcastEmail.sendFirstBroadcast') }}
       </router-link>
     </div>
 
@@ -27,7 +27,7 @@
           <div class="flex-1">
             <div class="flex items-center space-x-2 mb-2">
               <h3 class="text-lg font-semibold text-gray-900">{{ item.subject }}</h3>
-              <span v-if="item.has_attachments" class="text-gray-400" title="Has attachments">
+              <span v-if="item.has_attachments" class="text-gray-400" :title="$t('broadcastEmail.hasAttachments')">
                 📎
               </span>
             </div>
@@ -36,14 +36,14 @@
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                {{ item.user?.name || 'Unknown' }}
+                {{ item.user?.name || $t('broadcastEmail.unknown') }}
               </div>
               <span>•</span>
               <div class="flex items-center">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                {{ item.recipient_count }} recipients
+                {{ item.recipient_count }} {{ $t('broadcastEmail.recipients') }}
               </div>
               <span>•</span>
               <div class="flex items-center">
@@ -54,7 +54,7 @@
                 <span v-if="item.filter_type === 'area' && item.area">
                   {{ item.area.name }}
                 </span>
-                <span v-else>All Areas</span>
+                <span v-else>{{ $t('broadcastEmail.allAreas') }}</span>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@
             >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
-            {{ expandedItems.includes(item.id) ? 'Hide' : 'Show' }} Email Content
+            {{ expandedItems.includes(item.id) ? $t('broadcastEmail.hideContent') : $t('broadcastEmail.showContent') }} {{ $t('broadcastEmail.emailContent') }}
           </button>
           
           <div v-show="expandedItems.includes(item.id)">
@@ -92,7 +92,7 @@
                 @click="toggleRecipients(item.id)"
                 class="text-sm text-gray-600 hover:text-gray-900"
               >
-                {{ showRecipients.includes(item.id) ? 'Hide' : 'Show' }} Recipients ({{ item.recipient_count }})
+                {{ showRecipients.includes(item.id) ? $t('broadcastEmail.hideRecipients') : $t('broadcastEmail.showRecipients') }} ({{ item.recipient_count }})
               </button>
               
               <div v-show="showRecipients.includes(item.id)" class="mt-2 bg-white border rounded p-3 max-h-40 overflow-y-auto">
@@ -116,8 +116,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '@/api/axios'
 
+const { t } = useI18n()
 const history = ref([])
 const loading = ref(false)
 const expandedItems = ref([])
@@ -129,11 +131,11 @@ const formatDate = (dateString) => {
   const diffInHours = Math.floor((now - date) / (1000 * 60 * 60))
   
   if (diffInHours < 1) {
-    return 'Just now'
+    return t('broadcastEmail.justNow')
   } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`
+    return t('broadcastEmail.hoursAgo', { hours: diffInHours })
   } else if (diffInHours < 48) {
-    return 'Yesterday'
+    return t('broadcastEmail.yesterday')
   } else {
     return date.toLocaleDateString('id-ID', { 
       day: 'numeric', 

@@ -8,21 +8,21 @@
         </svg>
       </button>
       <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">
-        {{ isEditMode ? 'Edit' : 'Add' }} Area
+        {{ isEditMode ? $t('areas.editArea') : $t('areas.addArea') }}
       </h1>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-2 text-gray-600">Loading...</p>
+      <p class="mt-2 text-gray-600">{{ $t('areas.loading') }}</p>
     </div>
 
     <!-- Form -->
     <form v-else @submit.prevent="handleSubmit" class="card space-y-6">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-          Area Name <span class="text-red-500">*</span>
+          {{ $t('areas.areaName') }} <span class="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -30,26 +30,26 @@
           type="text"
           required
           class="input"
-          placeholder="e.g., Jakarta Pusat, Surabaya"
+          :placeholder="$t('areas.areaNamePlaceholder')"
         />
       </div>
 
       <div>
         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-          Description
+          {{ $t('areas.description') }}
         </label>
         <textarea
           id="description"
           v-model="form.description"
           rows="4"
           class="input"
-          placeholder="Optional description about this area"
+          :placeholder="$t('areas.descriptionPlaceholder')"
         ></textarea>
       </div>
 
       <div class="flex space-x-3">
         <button type="submit" class="btn btn-primary flex-1" :disabled="submitting">
-          {{ submitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }} Area
+          {{ submitting ? $t('areas.saving') : (isEditMode ? $t('areas.update') : $t('areas.create')) }} {{ $t('areas.area') }}
         </button>
         <button
           type="button"
@@ -57,7 +57,7 @@
           class="btn btn-secondary"
           :disabled="submitting"
         >
-          Cancel
+          {{ $t('areas.cancel') }}
         </button>
       </div>
     </form>
@@ -66,9 +66,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAreaStore } from '@/stores/area'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const areaStore = useAreaStore()
@@ -88,14 +90,14 @@ const handleSubmit = async () => {
   try {
     if (isEditMode.value) {
       await areaStore.updateArea(route.params.id, form.value)
-      alert('Area updated successfully')
+      alert(t('areas.updateSuccess'))
     } else {
       await areaStore.createArea(form.value)
-      alert('Area created successfully')
+      alert(t('areas.createSuccess'))
     }
     router.push('/areas')
   } catch (error) {
-    alert(`Failed to ${isEditMode.value ? 'update' : 'create'} area`)
+    alert(t('areas.saveError'))
   } finally {
     submitting.value = false
   }
@@ -111,7 +113,7 @@ onMounted(async () => {
         description: area.description || '',
       }
     } catch (error) {
-      alert('Failed to load area')
+      alert(t('areas.loadError'))
       router.push('/areas')
     } finally {
       loading.value = false

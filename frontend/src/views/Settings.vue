@@ -1,24 +1,23 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Email Settings</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('settings.title') }}</h1>
 
     <div class="card max-w-2xl">
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        <p class="mt-2 text-gray-600">Loading...</p>
+        <p class="mt-2 text-gray-600">{{ $t('settings.loading') }}</p>
       </div>
 
       <form v-else @submit.prevent="saveSettings" class="space-y-6">
         <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
           <p class="text-sm text-blue-800">
-            <strong>Note:</strong> Configure your email settings to send emails directly from the CRM.
-            These settings are private and only used for your account.
+            <strong>{{ $t('settings.note') }}</strong> {{ $t('settings.noteText') }}
           </p>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Mail Server (SMTP Host) *
+            {{ $t('settings.mailServer') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
           </label>
           <input
             v-model="form.mail_host"
@@ -27,13 +26,13 @@
             class="input"
             required
           />
-          <p class="text-xs text-gray-500 mt-1">Example: smtp.gmail.com, smtp.office365.com</p>
+          <p class="text-xs text-gray-500 mt-1">{{ $t('settings.mailServerExample') }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Port *
+              {{ $t('settings.port') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
             </label>
             <input
               v-model.number="form.mail_port"
@@ -42,77 +41,77 @@
               class="input"
               required
             />
-            <p class="text-xs text-gray-500 mt-1">Usually 587 for TLS</p>
+            <p class="text-xs text-gray-500 mt-1">{{ $t('settings.portExample') }}</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Encryption *
+              {{ $t('settings.encryption') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
             </label>
             <select v-model="form.mail_encryption" class="input" required>
-              <option value="tls">TLS</option>
-              <option value="ssl">SSL</option>
+              <option value="tls">{{ $t('settings.tls') }}</option>
+              <option value="ssl">{{ $t('settings.ssl') }}</option>
             </select>
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Email Username *
+            {{ $t('settings.emailUsername') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
           </label>
           <input
             v-model="form.mail_username"
             type="text"
-            placeholder="your-email@example.com"
+            :placeholder="$t('settings.emailUsernamePlaceholder')"
             class="input"
             required
           />
-          <p class="text-xs text-gray-500 mt-1">Your email address for SMTP authentication</p>
+          <p class="text-xs text-gray-500 mt-1">{{ $t('settings.emailUsernameHelp') }}</p>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Email Password *
+            {{ $t('settings.emailPassword') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
           </label>
           <input
             v-model="form.mail_password"
             type="password"
-            placeholder="Enter your email password or app password"
+            :placeholder="$t('settings.emailPasswordPlaceholder')"
             class="input"
             required
           />
           <p class="text-xs text-gray-500 mt-1">
-            For Gmail, use App Password (not your regular password). 
-            <a href="https://support.google.com/accounts/answer/185833" target="_blank" class="text-blue-600 hover:underline">Learn more</a>
+            {{ $t('settings.emailPasswordHelp') }}
+            <a href="https://support.google.com/accounts/answer/185833" target="_blank" class="text-blue-600 hover:underline">{{ $t('settings.learnMore') }}</a>
           </p>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            From Email Address *
+            {{ $t('settings.fromAddress') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
           </label>
           <input
             v-model="form.mail_from_address"
             type="email"
-            placeholder="your-email@example.com"
+            :placeholder="$t('settings.emailUsernamePlaceholder')"
             class="input"
             required
           />
-          <p class="text-xs text-gray-500 mt-1">Email address shown as sender</p>
+          <p class="text-xs text-gray-500 mt-1">{{ $t('settings.fromAddressHelp') }}</p>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            From Name *
+            {{ $t('settings.fromName') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
           </label>
           <input
             v-model="form.mail_from_name"
             type="text"
-            placeholder="Your Name"
+            :placeholder="$t('settings.fromNamePlaceholder')"
             class="input"
             required
           />
-          <p class="text-xs text-gray-500 mt-1">Name shown as sender</p>
+          <p class="text-xs text-gray-500 mt-1">{{ $t('settings.fromNameHelp') }}</p>
         </div>
 
         <div class="flex justify-end space-x-3 pt-4">
@@ -121,7 +120,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ settings ? 'Update Settings' : 'Save Settings' }}
+            {{ settings ? $t('settings.updateSettings') : $t('settings.saveSettings') }}
           </button>
         </div>
       </form>
