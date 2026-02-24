@@ -1,10 +1,10 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('dashboard.title') }}</h1>
 
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-2 text-gray-600">Loading...</p>
+      <p class="mt-2 text-gray-600">{{ $t('dashboard.loading') }}</p>
     </div>
 
     <div v-else-if="stats" class="space-y-6">
@@ -18,7 +18,7 @@
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Total Customers</p>
+              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.totalCustomers') }}</p>
               <p class="text-2xl font-semibold text-gray-900">{{ stats.total_customers }}</p>
             </div>
           </div>
@@ -32,7 +32,7 @@
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">📅 Upcoming Meeting</p>
+              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.upcomingMeeting') }}</p>
               <p class="text-2xl font-semibold text-gray-900">{{ stats.meeting_count }}</p>
             </div>
           </div>
@@ -46,7 +46,7 @@
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">⏰ Action Today</p>
+              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.actionToday') }}</p>
               <p class="text-2xl font-semibold text-gray-900">{{ stats.action_today }}</p>
             </div>
           </div>
@@ -60,7 +60,7 @@
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">🔥 Hot Leads</p>
+              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.hotLeads') }}</p>
               <p class="text-2xl font-semibold text-gray-900">{{ stats.hot_leads }}</p>
             </div>
           </div>
@@ -71,7 +71,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Leads by Status -->
         <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Leads by Status</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.leadsByStatus') }}</h3>
           <div class="space-y-3">
             <div
               v-for="status in stats.leads_by_status"
@@ -92,7 +92,7 @@
 
         <!-- Customers by Area -->
         <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Customers by Area</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.customersByArea') }}</h3>
           <div class="space-y-3">
             <div
               v-for="area in stats.customers_by_area"
