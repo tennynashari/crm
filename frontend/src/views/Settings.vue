@@ -130,8 +130,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useEmailSettingStore } from '@/stores/emailSetting'
 
+const { t } = useI18n()
 const emailSettingStore = useEmailSettingStore()
 const loading = ref(false)
 const settings = ref(null)
@@ -150,14 +152,14 @@ const saveSettings = async () => {
   try {
     if (settings.value) {
       await emailSettingStore.updateSettings(form.value)
-      alert('Email settings updated successfully!')
+      alert(t('settings.updateSuccess'))
     } else {
       await emailSettingStore.saveSettings(form.value)
-      alert('Email settings saved successfully!')
+      alert(t('settings.saveSuccess'))
     }
     await loadSettings()
   } catch (error) {
-    alert('Failed to save email settings: ' + (error.response?.data?.message || error.message))
+    alert(t('settings.saveError') + ': ' + (error.response?.data?.message || error.message))
   }
 }
 

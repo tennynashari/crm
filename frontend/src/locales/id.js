@@ -99,6 +99,10 @@ export default {
     creating: 'Membuat...',
     updating: 'Memperbarui...',
     cancel: 'Batal',
+    updateSuccess: 'Pelanggan berhasil diperbarui!',
+    createSuccess: 'Pelanggan berhasil dibuat!',
+    saveError: 'Gagal menyimpan pelanggan',
+    loadError: 'Gagal memuat data pelanggan',
     required: '*'
   },
   
@@ -247,6 +251,9 @@ export default {
     fromNameHelp: 'Nama yang ditampilkan sebagai pengirim',
     updateSettings: 'Perbarui Pengaturan',
     saveSettings: 'Simpan Pengaturan',
+    updateSuccess: 'Pengaturan email berhasil diperbarui!',
+    saveSuccess: 'Pengaturan email berhasil disimpan!',
+    saveError: 'Gagal menyimpan pengaturan email',
     required: '*'
   },
   

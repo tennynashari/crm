@@ -158,6 +158,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
 import { useAreaStore } from '@/stores/area'
@@ -165,6 +166,7 @@ import { useLeadStatusStore } from '@/stores/leadStatus'
 import { useUserStore } from '@/stores/user'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const customerStore = useCustomerStore()
@@ -203,15 +205,15 @@ const handleSubmit = async () => {
   try {
     if (isEditMode.value) {
       const response = await customerStore.updateCustomer(route.params.id, form.value)
-      alert('Customer updated successfully!')
+      alert(t('customerForm.updateSuccess'))
       router.push(`/customers/${route.params.id}`)
     } else {
       const response = await customerStore.createCustomer(form.value)
-      alert('Customer created successfully!')
+      alert(t('customerForm.createSuccess'))
       router.push('/customers')
     }
   } catch (err) {
-    error.value = err.response?.data?.message || `Failed to ${isEditMode.value ? 'update' : 'create'} customer`
+    error.value = err.response?.data?.message || t('customerForm.saveError')
   } finally {
     loading.value = false
   }
@@ -256,7 +258,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Failed to load customer:', error)
-      alert('Failed to load customer data')
+      alert(t('customerForm.loadError'))
       router.back()
     }
   }

@@ -99,6 +99,10 @@ export default {
     creating: 'Creating...',
     updating: 'Updating...',
     cancel: 'Cancel',
+    updateSuccess: 'Customer updated successfully!',
+    createSuccess: 'Customer created successfully!',
+    saveError: 'Failed to save customer',
+    loadError: 'Failed to load customer data',
     required: '*'
   },
   
@@ -247,6 +251,9 @@ export default {
     fromNameHelp: 'Name shown as sender',
     updateSettings: 'Update Settings',
     saveSettings: 'Save Settings',
+    updateSuccess: 'Email settings updated successfully!',
+    saveSuccess: 'Email settings saved successfully!',
+    saveError: 'Failed to save email settings',
     required: '*'
   },
   
