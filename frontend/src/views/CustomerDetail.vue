@@ -1,7 +1,7 @@
 <template>
   <div v-if="loading" class="text-center py-12">
     <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-    <p class="mt-2 text-gray-600">Loading customer...</p>
+    <p class="mt-2 text-gray-600">{{ $t('customerDetail.loading') }}</p>
   </div>
 
   <div v-else-if="customer" class="space-y-6">
@@ -14,7 +14,7 @@
       </router-link>
       <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">
         {{ customer.company }}
-        <span v-if="customer.is_individual" class="text-sm text-gray-500 font-normal ml-2">(Individual)</span>
+        <span v-if="customer.is_individual" class="text-sm text-gray-500 font-normal ml-2">({{ $t('customerDetail.individual') }})</span>
       </h1>
       <div class="flex space-x-2">
         <button
@@ -27,7 +27,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <span v-if="exportLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></span>
-          {{ exportLoading ? 'Exporting...' : 'Export' }}
+          {{ exportLoading ? $t('customerDetail.exporting') : $t('customerDetail.export') }}
         </button>
         <router-link
           :to="`/customers/${customer.id}/edit`"
@@ -36,13 +36,13 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
-          Edit
+          {{ $t('customerDetail.edit') }}
         </router-link>
         <button @click="handleDelete" class="btn bg-red-600 hover:bg-red-700 text-white">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
-          Delete
+          {{ $t('customerDetail.delete') }}
         </button>
       </div>
     </div>
@@ -52,44 +52,44 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.email') }}</label>
             <p class="text-gray-900">{{ customer.email || '-' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Phone</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.phone') }}</label>
             <p class="text-gray-900">{{ customer.phone || '-' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Address</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.address') }}</label>
             <p class="text-gray-900">{{ customer.address || '-' }}</p>
           </div>
         </div>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Area</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.area') }}</label>
             <select v-model="customer.area_id" @change="updateCustomer" class="input">
-              <option :value="null">No Area</option>
+              <option :value="null">{{ $t('customerDetail.noArea') }}</option>
               <option v-for="area in areas" :key="area.id" :value="area.id">
                 {{ area.name }}
               </option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Assigned Sales</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.assignedSales') }}</label>
             <p class="text-gray-900">{{ customer.assigned_sales?.name || '-' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Lead Status</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.leadStatus') }}</label>
             <select v-model="customer.lead_status_id" @change="updateCustomer" class="input">
-              <option :value="null">No Status</option>
+              <option :value="null">{{ $t('customerDetail.noStatus') }}</option>
               <option v-for="status in statuses" :key="status.id" :value="status.id">
                 {{ status.name }}
               </option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">Source</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.source') }}</label>
             <p class="text-gray-900 capitalize">{{ customer.source }}</p>
           </div>
         </div>
@@ -99,7 +99,7 @@
     <!-- Contacts (PICs) Card -->
     <div class="card">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Contacts (PIC)</h3>
+        <h3 class="text-lg font-semibold text-gray-800">{{ $t('customerDetail.contactsTitle') }}</h3>
         <button
           @click="showContactModal = true"
           class="btn btn-primary btn-sm"
@@ -107,7 +107,7 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Contact
+          {{ $t('customerDetail.addContact') }}
         </button>
       </div>
 
@@ -122,18 +122,18 @@
               <div class="flex items-center space-x-2 mb-2">
                 <h4 class="font-semibold text-gray-900">{{ contact.name }}</h4>
                 <span v-if="contact.is_primary" class="badge bg-primary-100 text-primary-800 text-xs">
-                  Primary
+                  {{ $t('customerDetail.primary') }}
                 </span>
               </div>
               <div class="space-y-1 text-sm text-gray-600">
                 <p v-if="contact.position">
-                  <span class="font-medium">Position:</span> {{ contact.position }}
+                  <span class="font-medium">{{ $t('customerDetail.position') }}:</span> {{ contact.position }}
                 </p>
                 <p v-if="contact.email">
-                  <span class="font-medium">Email:</span> {{ contact.email }}
+                  <span class="font-medium">{{ $t('customerDetail.email') }}:</span> {{ contact.email }}
                 </p>
                 <p v-if="contact.whatsapp">
-                  <span class="font-medium">WhatsApp:</span> {{ contact.whatsapp }}
+                  <span class="font-medium">{{ $t('customerDetail.whatsapp') }}:</span> {{ contact.whatsapp }}
                   <button
                     type="button"
                     @click="openWhatsApp(contact)"
@@ -177,16 +177,16 @@
       </div>
 
       <div v-else class="text-center text-gray-500 py-4">
-        No contacts added yet
+        {{ $t('customerDetail.noContacts') }}
       </div>
     </div>
 
     <!-- Next Action Card -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">Next Action</h3>
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.nextActionTitle') }}</h3>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-600 mb-1">Date</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.date') }}</label>
           <input
             v-model="nextAction.next_action_date"
             type="date"
@@ -194,26 +194,26 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-600 mb-1">Priority</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.priority') }}</label>
           <select v-model="nextAction.next_action_priority" class="input">
-            <option :value="null">No Priority</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+            <option :value="null">{{ $t('customerDetail.noPriority') }}</option>
+            <option value="low">{{ $t('customerDetail.low') }}</option>
+            <option value="medium">{{ $t('customerDetail.medium') }}</option>
+            <option value="high">{{ $t('customerDetail.high') }}</option>
           </select>
         </div>
         <div class="lg:col-span-2">
-          <label class="block text-sm font-medium text-gray-600 mb-1">Action Plan</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.actionPlan') }}</label>
           <textarea
             v-model="nextAction.next_action_plan"
             rows="3"
             class="input"
-            placeholder="What needs to be done?"
+            :placeholder="$t('customerDetail.actionPlanPlaceholder')"
           ></textarea>
         </div>
         <div class="lg:col-span-2">
           <button @click="updateNextAction" class="btn btn-primary">
-            Update Next Action
+            {{ $t('customerDetail.updateNextAction') }}
           </button>
         </div>
       </div>
@@ -223,10 +223,10 @@
     <div class="card lg:hidden fixed bottom-4 left-4 right-4 shadow-lg z-10">
       <div class="grid grid-cols-2 gap-2">
         <button @click="openEmailModal" class="btn btn-primary text-sm">
-          ✉️ Email
+          ✉️ {{ $t('customerDetail.sendEmail').split(' ')[1] }}
         </button>
         <button @click="showInteractionModal = true" class="btn btn-secondary text-sm">
-          📝 History
+          📝 {{ $t('customerDetail.addHistory').split(' ')[1] }}
         </button>
       </div>
     </div>
@@ -237,16 +237,16 @@
         <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
-        Send Email
+        {{ $t('customerDetail.sendEmail') }}
       </button>
       <button @click="showInteractionModal = true" class="btn btn-secondary">
-        📝 Add History
+        📝 {{ $t('customerDetail.addHistory') }}
       </button>
     </div>
 
     <!-- Interactions Timeline -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">Communication History</h3>
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.historyTitle') }}</h3>
       
       <div v-if="interactions && interactions.length > 0" class="space-y-4">
         <div
@@ -268,13 +268,13 @@
                 v-if="interaction.interaction_type.includes('inbound')"
                 class="badge bg-green-100 text-green-800 text-xs"
               >
-                Inbound
+                {{ $t('customerDetail.inbound') }}
               </span>
               <span
                 v-else-if="interaction.interaction_type.includes('outbound')"
                 class="badge bg-blue-100 text-blue-800 text-xs"
               >
-                Outbound
+                {{ $t('customerDetail.outbound') }}
               </span>
             </div>
             <div class="flex items-center space-x-2">
@@ -325,10 +325,10 @@
             class="px-3 py-1 rounded border text-sm"
             :class="interactionPagination.current_page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
-            Previous
+            {{ $t('customerDetail.previous') }}
           </button>
           <span class="text-sm text-gray-600">
-            Page {{ interactionPagination.current_page }} of {{ interactionPagination.last_page }}
+            {{ $t('customerDetail.pageOf', { current: interactionPagination.current_page, total: interactionPagination.last_page }) }}
           </span>
           <button
             @click="changeInteractionPage(interactionPagination.current_page + 1)"
@@ -336,20 +336,20 @@
             class="px-3 py-1 rounded border text-sm"
             :class="interactionPagination.current_page === interactionPagination.last_page ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
-            Next
+            {{ $t('customerDetail.next') }}
           </button>
         </div>
       </div>
 
       <div v-else class="text-center text-gray-500 py-8">
-        No communication history yet
+        {{ $t('customerDetail.noHistory') }}
       </div>
     </div>
 
     <!-- Sales / Invoices Section -->
     <div class="card">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Sales History</h3>
+        <h3 class="text-lg font-semibold text-gray-800">{{ $t('customerDetail.salesTitle') }}</h3>
         <button
           @click="showInvoiceModal = true"
           class="btn btn-primary btn-sm"
@@ -357,7 +357,7 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Invoice
+          {{ $t('customerDetail.addInvoice') }}
         </button>
       </div>
 
@@ -380,7 +380,7 @@
                     'bg-red-100 text-red-800': invoice.status === 'cancelled',
                   }"
                 >
-                  {{ invoice.status.toUpperCase() }}
+                  {{ $t(`customerDetail.${invoice.status}`) }}
                 </span>
               </div>
               <div class="text-sm text-gray-600 mt-1">
@@ -449,10 +449,10 @@
             class="px-3 py-1 rounded border text-sm"
             :class="invoicePagination.current_page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
-            Previous
+            {{ $t('customerDetail.previous') }}
           </button>
           <span class="text-sm text-gray-600">
-            Page {{ invoicePagination.current_page }} of {{ invoicePagination.last_page }}
+            {{ $t('customerDetail.pageOf', { current: invoicePagination.current_page, total: invoicePagination.last_page }) }}
           </span>
           <button
             @click="changeInvoicePage(invoicePagination.current_page + 1)"
@@ -460,13 +460,13 @@
             class="px-3 py-1 rounded border text-sm"
             :class="invoicePagination.current_page === invoicePagination.last_page ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
-            Next
+            {{ $t('customerDetail.next') }}
           </button>
         </div>
       </div>
 
       <div v-else class="text-center text-gray-500 py-8">
-        No sales history yet
+        {{ $t('customerDetail.noInvoices') }}
       </div>
     </div>
 

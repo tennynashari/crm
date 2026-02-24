@@ -6,7 +6,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
       </button>
-      <h1 class="text-3xl font-bold text-gray-800">{{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}</h1>
+      <h1 class="text-3xl font-bold text-gray-800">{{ isEditMode ? $t('customerForm.editTitle') : $t('customerForm.addTitle') }}</h1>
     </div>
 
     <div class="card max-w-3xl">
@@ -19,65 +19,65 @@
                 type="checkbox"
                 class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
-              <span class="ml-2 text-sm text-gray-700">Individual Customer (not a company)</span>
+              <span class="ml-2 text-sm text-gray-700">{{ $t('customerForm.individualLabel') }}</span>
             </label>
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              {{ form.is_individual ? 'Customer Name' : 'Company Name' }} <span class="text-red-500">*</span>
+              {{ form.is_individual ? $t('customerForm.customerName') : $t('customerForm.companyName') }} <span class="text-red-500">{{ $t('customerForm.required') }}</span>
             </label>
             <input
               v-model="form.company"
               type="text"
               required
               class="input"
-              :placeholder="form.is_individual ? 'e.g., John Doe' : 'e.g., PT Maju Jaya'"
+              :placeholder="form.is_individual ? $t('customerForm.namePlaceholder') : $t('customerForm.companyPlaceholder')"
             />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              {{ $t('customerForm.email') }}
             </label>
             <input
               v-model="form.email"
               type="email"
               class="input"
-              placeholder="email@example.com"
+              :placeholder="$t('customerForm.emailPlaceholder')"
             />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Phone
+              {{ $t('customerForm.phone') }}
             </label>
             <input
               v-model="form.phone"
               type="text"
               class="input"
-              placeholder="021-1234567"
+              :placeholder="$t('customerForm.phonePlaceholder')"
             />
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Address
+              {{ $t('customerForm.address') }}
             </label>
             <textarea
               v-model="form.address"
               rows="2"
               class="input"
-              placeholder="Full address"
+              :placeholder="$t('customerForm.addressPlaceholder')"
             ></textarea>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Area
+              {{ $t('customerForm.area') }}
             </label>
             <select v-model="form.area_id" class="input">
-              <option :value="null">Select area</option>
+              <option :value="null">{{ $t('customerForm.selectArea') }}</option>
               <option v-for="area in areas" :key="area.id" :value="area.id">
                 {{ area.name }}
               </option>
@@ -86,20 +86,20 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Source <span class="text-red-500">*</span>
+              {{ $t('customerForm.source') }} <span class="text-red-500">{{ $t('customerForm.required') }}</span>
             </label>
             <select v-model="form.source" required class="input">
-              <option value="inbound">Inbound</option>
-              <option value="outbound">Outbound</option>
+              <option value="inbound">{{ $t('customerForm.inbound') }}</option>
+              <option value="outbound">{{ $t('customerForm.outbound') }}</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Lead Status
+              {{ $t('customerForm.leadStatus') }}
             </label>
             <select v-model="form.lead_status_id" class="input">
-              <option :value="null">Select status</option>
+              <option :value="null">{{ $t('customerForm.selectStatus') }}</option>
               <option v-for="status in statuses" :key="status.id" :value="status.id">
                 {{ status.name }}
               </option>
@@ -108,10 +108,10 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Assigned Sales
+              {{ $t('customerForm.assignedSales') }}
             </label>
             <select v-model="form.assigned_sales_id" class="input">
-              <option :value="null">Select sales</option>
+              <option :value="null">{{ $t('customerForm.selectSales') }}</option>
               <option v-for="user in salesUsers" :key="user.id" :value="user.id">
                 {{ user.name }}
               </option>
@@ -121,13 +121,13 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Notes
+            {{ $t('customerForm.notes') }}
           </label>
           <textarea
             v-model="form.notes"
             rows="4"
             class="input"
-            placeholder="Internal notes..."
+            :placeholder="$t('customerForm.notesPlaceholder')"
           ></textarea>
         </div>
 
@@ -141,14 +141,14 @@
             :disabled="loading"
             class="btn btn-primary flex-1"
           >
-            {{ loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Customer' : 'Create Customer') }}
+            {{ loading ? (isEditMode ? $t('customerForm.updating') : $t('customerForm.creating')) : (isEditMode ? $t('customerForm.updateCustomer') : $t('customerForm.createCustomer')) }}
           </button>
           <button
             type="button"
             @click="$router.back()"
             class="btn btn-secondary"
           >
-            Cancel
+            {{ $t('customerForm.cancel') }}
           </button>
         </div>
       </form>

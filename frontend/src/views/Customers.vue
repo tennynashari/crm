@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-      <h1 class="text-3xl font-bold text-gray-800 mb-4 lg:mb-0">Customers</h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-4 lg:mb-0">{{ $t('customers.title') }}</h1>
       <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="exportToExcel"
@@ -15,7 +15,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          {{ exportLoading ? 'Exporting...' : 'Export Excel' }}
+          {{ exportLoading ? $t('customers.exporting') : $t('customers.exportExcel') }}
         </button>
         <router-link
           to="/customers/create"
@@ -24,7 +24,7 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Add Customer
+          {{ $t('customers.addCustomer') }}
         </router-link>
       </div>
     </div>
@@ -36,35 +36,35 @@
           v-model="filters.search"
           @input="handleSearch"
           type="text"
-          placeholder="Search..."
+          :placeholder="$t('customers.searchPlaceholder')"
           class="input"
         />
 
         <select v-model="filters.area_id" @change="applyFilters" class="input">
-          <option :value="null">All Areas</option>
+          <option :value="null">{{ $t('customers.allAreas') }}</option>
           <option v-for="area in areas" :key="area.id" :value="area.id">
             {{ area.name }}
           </option>
         </select>
 
         <select v-model="filters.lead_status_id" @change="applyFilters" class="input">
-          <option :value="null">All Statuses</option>
+          <option :value="null">{{ $t('customers.allStatuses') }}</option>
           <option v-for="status in statuses" :key="status.id" :value="status.id">
             {{ status.name }}
           </option>
         </select>
 
         <select v-model="filters.source" @change="applyFilters" class="input">
-          <option :value="null">All Sources</option>
-          <option value="inbound">Inbound</option>
-          <option value="outbound">Outbound</option>
+          <option :value="null">{{ $t('customers.allSources') }}</option>
+          <option value="inbound">{{ $t('customers.inbound') }}</option>
+          <option value="outbound">{{ $t('customers.outbound') }}</option>
         </select>
 
         <select v-model="filters.next_action_status" @change="applyFilters" class="input">
-          <option :value="null">All Actions</option>
-          <option value="today">Today</option>
-          <option value="this_week">Next 7 Days</option>
-          <option value="meeting">Upcoming Meeting</option>
+          <option :value="null">{{ $t('customers.allActions') }}</option>
+          <option value="today">{{ $t('customers.today') }}</option>
+          <option value="this_week">{{ $t('customers.next7Days') }}</option>
+          <option value="meeting">{{ $t('customers.upcomingMeeting') }}</option>
         </select>
       </div>
     </div>
@@ -72,7 +72,7 @@
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-2 text-gray-600">Loading customers...</p>
+      <p class="mt-2 text-gray-600">{{ $t('customers.loading') }}</p>
     </div>
 
     <!-- Customer List -->
@@ -89,7 +89,7 @@
             <div>
               <h3 class="font-semibold text-gray-900">{{ customer.company }}</h3>
               <p v-if="customer.phone" class="text-xs text-gray-600">📞 {{ customer.phone }}</p>
-              <p v-if="customer.is_individual" class="text-xs text-gray-500">Individual Customer</p>
+              <p v-if="customer.is_individual" class="text-xs text-gray-500">{{ $t('customers.individualCustomer') }}</p>
             </div>
             <div class="flex flex-col items-end space-y-1">
               <span
@@ -116,13 +116,13 @@
 
           <div class="space-y-1 text-sm text-gray-600">
             <p v-if="customer.email">
-              <span class="font-medium">Email:</span> {{ customer.email }}
+              <span class="font-medium">{{ $t('customerDetail.email') }}:</span> {{ customer.email }}
             </p>
             <p v-if="customer.area">
-              <span class="font-medium">Area:</span> {{ customer.area.name }}
+              <span class="font-medium">{{ $t('customers.area') }}:</span> {{ customer.area.name }}
             </p>
             <div v-if="customer.contacts && customer.contacts.length > 0">
-              <p class="font-medium">PIC:</p>
+              <p class="font-medium">{{ $t('customers.pic') }}:</p>
               <p class="ml-2">{{ customer.contacts.find(c => c.is_primary)?.name || customer.contacts[0].name }}</p>
               <p v-if="(customer.contacts.find(c => c.is_primary) || customer.contacts[0]).email" class="ml-2 text-xs">
                 ✉️ {{ (customer.contacts.find(c => c.is_primary) || customer.contacts[0]).email }}
@@ -132,10 +132,10 @@
               </p>
             </div>
             <p v-if="customer.next_action_date" class="text-orange-600 font-medium">
-              Next: {{ formatDate(customer.next_action_date) }}
+              {{ $t('customers.next') }}: {{ formatDate(customer.next_action_date) }}
             </p>
             <div v-if="customer.interactions && customer.interactions.length > 0" class="pt-2 border-t mt-2">
-              <p class="font-medium text-gray-700">Last Interaction:</p>
+              <p class="font-medium text-gray-700">{{ $t('customers.lastInteraction') }}:</p>
               <p class="text-xs text-gray-600">{{ formatDateTime(customer.interactions[0].interaction_at) }}</p>
               <p class="text-xs text-gray-500 italic truncate">{{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}</p>
             </div>
@@ -149,22 +149,22 @@
           <thead class="bg-gray-50">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                Company
+                {{ $t('customers.company') }}
               </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                Area
+                {{ $t('customers.area') }}
               </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                Status
+                {{ $t('customers.status') }}
               </th>
               <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                Source
+                {{ $t('customers.source') }}
               </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
-                Next Action
+                {{ $t('customers.nextAction') }}
               </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                Last Interaction
+                {{ $t('customers.lastInteraction') }}
               </th>
             </tr>
           </thead>
@@ -222,7 +222,7 @@
                     {{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}
                   </div>
                 </div>
-                <span v-else class="text-gray-400">No history</span>
+                <span v-else class="text-gray-400">{{ $t('customers.noHistory') }}</span>
               </td>
             </tr>
           </tbody>
@@ -236,23 +236,23 @@
           :disabled="pagination.current_page === 1"
           class="btn btn-secondary disabled:opacity-50"
         >
-          Previous
+          {{ $t('customers.previous') }}
         </button>
         <span class="text-sm text-gray-600">
-          Page {{ pagination.current_page }} of {{ pagination.last_page }}
+          {{ $t('customers.pageOf', { current: pagination.current_page, total: pagination.last_page }) }}
         </span>
         <button
           @click="changePage(pagination.current_page + 1)"
           :disabled="pagination.current_page === pagination.last_page"
           class="btn btn-secondary disabled:opacity-50"
         >
-          Next
+          {{ $t('customers.nextPage') }}
         </button>
       </div>
 
       <!-- No data -->
       <div v-if="!loading && customers.length === 0" class="card text-center py-12">
-        <p class="text-gray-500">No customers found.</p>
+        <p class="text-gray-500">{{ $t('customers.noCustomers') }}</p>
       </div>
     </div>
   </div>
