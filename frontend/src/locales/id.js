@@ -29,7 +29,9 @@ export default {
     leadsByStatus: 'Lead berdasarkan Status',
     customersByArea: 'Pelanggan Berdasarkan Area',
     nextActionToday: 'Aksi Hari Ini',
-    noActionsToday: 'Tidak ada aksi yang dijadwalkan hari ini'
+    noActionsToday: 'Tidak ada aksi yang dijadwalkan hari ini',
+    thisWeekMeetings: 'Meeting Minggu Ini',
+    noMeetingsThisWeek: 'Tidak ada meeting yang dijadwalkan minggu ini'
   },
   
   // Customers Page

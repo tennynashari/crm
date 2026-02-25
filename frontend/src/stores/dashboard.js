@@ -7,6 +7,8 @@ export const useDashboardStore = defineStore('dashboard', {
     loading: false,
     todayActions: [],
     todayActionsLoading: false,
+    weekMeetings: [],
+    weekMeetingsLoading: false,
   }),
 
   actions: {
@@ -33,6 +35,19 @@ export const useDashboardStore = defineStore('dashboard', {
         throw error
       } finally {
         this.todayActionsLoading = false
+      }
+    },
+
+    async fetchWeekMeetings() {
+      this.weekMeetingsLoading = true
+      try {
+        const response = await api.get('/dashboard/week-meetings')
+        this.weekMeetings = response.data
+        return response.data
+      } catch (error) {
+        throw error
+      } finally {
+        this.weekMeetingsLoading = false
       }
     },
   },

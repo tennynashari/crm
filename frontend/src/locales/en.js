@@ -29,7 +29,9 @@ export default {
     leadsByStatus: 'Leads by Status',
     customersByArea: 'Customers by Area',
     nextActionToday: 'Next Action Today',
-    noActionsToday: 'No actions scheduled for today'
+    noActionsToday: 'No actions scheduled for today',
+    thisWeekMeetings: 'This Week Meetings',
+    noMeetingsThisWeek: 'No meetings scheduled this week'
   },
   
   // Customers Page

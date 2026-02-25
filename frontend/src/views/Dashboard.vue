@@ -156,6 +156,109 @@
         </div>
       </div>
 
+      <!-- This Week Meetings -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.thisWeekMeetings') }}</h3>
+          <span v-if="weekMeetings.length > 0" class="badge bg-orange-100 text-orange-800">
+            {{ weekMeetings.length }} {{ weekMeetings.length === 1 ? 'customer' : 'customers' }}
+          </span>
+        </div>
+
+        <div v-if="weekMeetingsLoading" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+        </div>
+
+        <div v-else-if="weekMeetings.length === 0" class="text-center py-8 text-gray-500">
+          {{ $t('dashboard.noMeetingsThisWeek') }}
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                  {{ $t('customers.company') }}
+                </th>
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  {{ $t('customers.area') }}
+                </th>
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  {{ $t('customers.status') }}
+                </th>
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                  {{ $t('customers.source') }}
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                  {{ $t('customers.nextAction') }}
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                  {{ $t('customers.lastInteraction') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr
+                v-for="customer in weekMeetings"
+                :key="customer.id"
+                @click="goToDetail(customer.id)"
+                class="hover:bg-gray-50 cursor-pointer transition-colors"
+              >
+                <td class="px-4 py-3">
+                  <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ customer.company }}</div>
+                  <div class="text-xs text-gray-500 truncate max-w-xs">{{ customer.email }}</div>
+                  <div v-if="customer.phone" class="text-xs text-gray-500">📞 {{ customer.phone }}</div>
+                </td>
+                <td class="px-3 py-3 text-sm text-gray-900">
+                  <div class="truncate max-w-24">{{ customer.area?.name || '-' }}</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span
+                    v-if="customer.lead_status"
+                    class="badge text-xs px-2 py-1 whitespace-nowrap"
+                    :style="{
+                      backgroundColor: customer.lead_status.color + '20',
+                      color: customer.lead_status.color,
+                    }"
+                  >
+                    {{ customer.lead_status.name }}
+                  </span>
+                </td>
+                <td class="px-3 py-3">
+                  <span
+                    class="badge text-xs px-2 py-1 whitespace-nowrap"
+                    :class="{
+                      'bg-green-100 text-green-800': customer.source === 'inbound',
+                      'bg-blue-100 text-blue-800': customer.source === 'outbound',
+                    }"
+                  >
+                    {{ customer.source }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  <div v-if="customer.next_action_date">
+                    <div class="text-gray-900 text-xs font-bold">{{ formatDate(customer.next_action_date) }}</div>
+                    <div class="text-gray-500 text-xs truncate max-w-xs">{{ customer.next_action_plan }}</div>
+                  </div>
+                  <span v-else class="text-gray-400">-</span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  <div v-if="customer.interactions && customer.interactions.length > 0">
+                    <div class="text-gray-900 text-xs font-medium">
+                      {{ formatDateTime(customer.interactions[0].interaction_at) }}
+                    </div>
+                    <div class="text-gray-500 text-xs truncate max-w-xs">
+                      {{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}
+                    </div>
+                  </div>
+                  <span v-else class="text-gray-400">{{ $t('customers.noHistory') }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Charts Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Leads by Status -->
@@ -210,6 +313,8 @@ const stats = ref(null)
 const loading = ref(false)
 const todayActions = ref([])
 const todayActionsLoading = ref(false)
+const weekMeetings = ref([])
+const weekMeetingsLoading = ref(false)
 
 const goToDetail = (id) => {
   router.push(`/customers/${id}`)
@@ -236,18 +341,22 @@ const formatDateTime = (datetime) => {
 onMounted(async () => {
   loading.value = true
   todayActionsLoading.value = true
+  weekMeetingsLoading.value = true
   try {
-    const [statsData, actionsData] = await Promise.all([
+    const [statsData, actionsData, meetingsData] = await Promise.all([
       dashboardStore.fetchStats(),
       dashboardStore.fetchTodayActions(),
+      dashboardStore.fetchWeekMeetings(),
     ])
     stats.value = statsData
     todayActions.value = actionsData
+    weekMeetings.value = meetingsData
   } catch (error) {
     console.error('Error loading dashboard:', error)
   } finally {
     loading.value = false
     todayActionsLoading.value = false
+    weekMeetingsLoading.value = false
   }
 })
 </script>

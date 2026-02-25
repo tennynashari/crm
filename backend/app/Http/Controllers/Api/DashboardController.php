@@ -121,4 +121,37 @@ class DashboardController extends Controller
 
         return response()->json($customers);
     }
+
+    public function weekMeetings(Request $request)
+    {
+        $userId = $request->user()->id;
+        $role = $request->user()->role;
+
+        // Base query - if sales, only their customers
+        $query = Customer::query();
+        if ($role === 'sales') {
+            $query->where('assigned_sales_id', $userId);
+        }
+
+        // Filter customers with meetings in current week (Monday to Sunday)
+        $startOfWeek = Carbon::now()->startOfWeek(); // Monday
+        $endOfWeek = Carbon::now()->endOfWeek(); // Sunday
+
+        $customers = $query->where('next_action_plan', 'ilike', '%meeting%')
+            ->whereBetween('next_action_date', [$startOfWeek, $endOfWeek])
+            ->with([
+                'area',
+                'leadStatus',
+                'contacts' => function ($q) {
+                    $q->orderBy('is_primary', 'desc');
+                },
+                'interactions' => function ($q) {
+                    $q->orderBy('interaction_at', 'desc')->limit(1);
+                }
+            ])
+            ->orderBy('next_action_date', 'asc')
+            ->get();
+
+        return response()->json($customers);
+    }
 }
