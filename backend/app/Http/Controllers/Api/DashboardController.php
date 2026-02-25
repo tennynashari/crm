@@ -117,7 +117,7 @@ class DashboardController extends Controller
                 }
             ])
             ->orderBy('next_action_date', 'asc')
-            ->get();
+            ->paginate($request->get('per_page', 10));
 
         return response()->json($customers);
     }
@@ -150,7 +150,7 @@ class DashboardController extends Controller
                 }
             ])
             ->orderBy('next_action_date', 'asc')
-            ->get();
+            ->paginate($request->get('per_page', 10));
 
         return response()->json($customers);
     }

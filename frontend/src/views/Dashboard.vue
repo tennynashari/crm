@@ -12,8 +12,8 @@
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.nextActionToday') }}</h3>
-          <span v-if="todayActions.length > 0" class="badge bg-green-100 text-green-800">
-            {{ todayActions.length }} {{ todayActions.length === 1 ? 'customer' : 'customers' }}
+          <span v-if="todayActionsPagination.total > 0" class="badge bg-green-100 text-green-800">
+            {{ todayActionsPagination.total }} {{ todayActionsPagination.total === 1 ? 'customer' : 'customers' }}
           </span>
         </div>
 
@@ -109,14 +109,35 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        <div v-if="todayActionsPagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-4">
+          <button
+            @click="changeTodayActionsPage(todayActionsPagination.current_page - 1)"
+            :disabled="todayActionsPagination.current_page === 1"
+            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-700">
+            Page {{ todayActionsPagination.current_page }} of {{ todayActionsPagination.last_page }}
+          </span>
+          <button
+            @click="changeTodayActionsPage(todayActionsPagination.current_page + 1)"
+            :disabled="todayActionsPagination.current_page === todayActionsPagination.last_page"
+            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       <!-- This Week Meetings -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.thisWeekMeetings') }}</h3>
-          <span v-if="weekMeetings.length > 0" class="badge bg-orange-100 text-orange-800">
-            {{ weekMeetings.length }} {{ weekMeetings.length === 1 ? 'customer' : 'customers' }}
+          <span v-if="weekMeetingsPagination.total > 0" class="badge bg-orange-100 text-orange-800">
+            {{ weekMeetingsPagination.total }} {{ weekMeetingsPagination.total === 1 ? 'customer' : 'customers' }}
           </span>
         </div>
 
@@ -212,6 +233,27 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        <div v-if="weekMeetingsPagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-4">
+          <button
+            @click="changeWeekMeetingsPage(weekMeetingsPagination.current_page - 1)"
+            :disabled="weekMeetingsPagination.current_page === 1"
+            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-700">
+            Page {{ weekMeetingsPagination.current_page }} of {{ weekMeetingsPagination.last_page }}
+          </span>
+          <button
+            @click="changeWeekMeetingsPage(weekMeetingsPagination.current_page + 1)"
+            :disabled="weekMeetingsPagination.current_page === weekMeetingsPagination.last_page"
+            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       <!-- Charts Row -->
@@ -267,7 +309,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboard'
 
@@ -276,10 +318,13 @@ const dashboardStore = useDashboardStore()
 
 const stats = ref(null)
 const loading = ref(false)
-const todayActions = ref([])
-const todayActionsLoading = ref(false)
-const weekMeetings = ref([])
-const weekMeetingsLoading = ref(false)
+const todayActions = computed(() => dashboardStore.todayActions)
+const todayActionsLoading = computed(() => dashboardStore.todayActionsLoading)
+const todayActionsPagination = computed(() => dashboardStore.todayActionsPagination)
+
+const weekMeetings = computed(() => dashboardStore.weekMeetings)
+const weekMeetingsLoading = computed(() => dashboardStore.weekMeetingsLoading)
+const weekMeetingsPagination = computed(() => dashboardStore.weekMeetingsPagination)
 
 const goToDetail = (id) => {
   router.push(`/customers/${id}`)
@@ -303,25 +348,29 @@ const formatDateTime = (datetime) => {
   })
 }
 
+const changeTodayActionsPage = async (page) => {
+  if (page < 1 || page > todayActionsPagination.value.last_page) return
+  await dashboardStore.fetchTodayActions(page)
+}
+
+const changeWeekMeetingsPage = async (page) => {
+  if (page < 1 || page > weekMeetingsPagination.value.last_page) return
+  await dashboardStore.fetchWeekMeetings(page)
+}
+
 onMounted(async () => {
   loading.value = true
-  todayActionsLoading.value = true
-  weekMeetingsLoading.value = true
   try {
-    const [statsData, actionsData, meetingsData] = await Promise.all([
+    const [statsData] = await Promise.all([
       dashboardStore.fetchStats(),
       dashboardStore.fetchTodayActions(),
       dashboardStore.fetchWeekMeetings(),
     ])
     stats.value = statsData
-    todayActions.value = actionsData
-    weekMeetings.value = meetingsData
   } catch (error) {
     console.error('Error loading dashboard:', error)
   } finally {
     loading.value = false
-    todayActionsLoading.value = false
-    weekMeetingsLoading.value = false
   }
 })
 </script>
