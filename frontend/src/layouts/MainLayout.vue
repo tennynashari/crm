@@ -5,8 +5,11 @@
       class="w-64 bg-white shadow-lg hidden lg:block"
       :class="{ 'hidden': !sidebarOpen }"
     >
-      <div class="p-6">
-        <h1 class="text-2xl font-bold text-primary-600">FlowCRM</h1>
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-center mb-2">
+          <img src="/logo.png" alt="Logo" class="h-12" />
+        </div>
+        <h1 class="text-xl font-bold text-primary-600 text-center">FlowCRM</h1>
       </div>
       <nav class="mt-6">
         <router-link

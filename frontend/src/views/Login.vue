@@ -2,6 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
     <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
       <div class="text-center mb-8">
+        <img src="/logo.png" alt="Logo" class="h-24 mx-auto mb-4" />
         <h1 class="text-3xl font-bold text-primary-600">FlowCRM</h1>
         <p class="text-gray-600 mt-2">Customer & Lead Management</p>
       </div>
