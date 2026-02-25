@@ -94,6 +94,12 @@
           </div>
         </div>
       </div>
+
+      <!-- Notes Section (Full Width) -->
+      <div v-if="customer.notes" class="mt-6 pt-6 border-t border-gray-200">
+        <label class="block text-sm font-medium text-gray-600 mb-2">{{ $t('customerDetail.notes') }}</label>
+        <p class="text-gray-900 whitespace-pre-wrap">{{ customer.notes }}</p>
+      </div>
     </div>
 
     <!-- Contacts (PICs) Card -->

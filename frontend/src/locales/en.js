@@ -122,6 +122,7 @@ export default {
     assignedSales: 'Assigned Sales',
     leadStatus: 'Lead Status',
     source: 'Source',
+    notes: 'Notes',
     noArea: 'No Area',
     noStatus: 'No Status',
     // Contacts Section

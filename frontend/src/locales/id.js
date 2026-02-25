@@ -121,8 +121,7 @@ export default {
     area: 'Area',
     assignedSales: 'Sales yang Ditugaskan',
     leadStatus: 'Status Lead',
-    source: 'Sumber',
-    noArea: 'Tidak ada Area',
+    source: 'Sumber',    notes: 'Catatan',    noArea: 'Tidak ada Area',
     noStatus: 'Tidak ada Status',
     // Contacts Section
     contactsTitle: 'Kontak (PIC)',
