@@ -31,7 +31,7 @@
 
     <!-- Filters -->
     <div class="card mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <input
           v-model="filters.search"
           @input="handleSearch"
@@ -58,13 +58,6 @@
           <option :value="null">{{ $t('customers.allSources') }}</option>
           <option value="inbound">{{ $t('customers.inbound') }}</option>
           <option value="outbound">{{ $t('customers.outbound') }}</option>
-        </select>
-
-        <select v-model="filters.next_action_status" @change="applyFilters" class="input">
-          <option :value="null">{{ $t('customers.allActions') }}</option>
-          <option value="today">{{ $t('customers.today') }}</option>
-          <option value="this_week">{{ $t('customers.next7Days') }}</option>
-          <option value="meeting">{{ $t('customers.upcomingMeeting') }}</option>
         </select>
 
         <select v-model="filters.sort_by" @change="handleSortChange" class="input">
@@ -307,7 +300,6 @@ const filters = ref({
   area_id: null,
   lead_status_id: null,
   source: null,
-  next_action_status: null,
   sort_by: 'next_action_date',
   sort_order: 'asc',
 })

@@ -64,23 +64,6 @@ class CustomerController extends Controller
             });
         }
 
-        // Filter by next action status
-        $hasNextActionFilter = false;
-        if ($request->has('next_action_status')) {
-            $hasNextActionFilter = true;
-            if ($request->next_action_status === 'today') {
-                $query->whereDate('next_action_date', now());
-            } elseif ($request->next_action_status === 'this_week') {
-                $query->whereBetween('next_action_date', [
-                    now()->startOfDay(),
-                    now()->addDays(7)->endOfDay()
-                ]);
-            } elseif ($request->next_action_status === 'meeting') {
-                $query->where('next_action_plan', 'ilike', '%meeting%')
-                      ->whereDate('next_action_date', '>=', now()->toDateString());
-            }
-        }
-
         // Sorting - support sort_by and sort_order
         $sortBy = $request->get('sort_by', 'next_action_date');
         $sortOrder = $request->get('sort_order', 'asc');

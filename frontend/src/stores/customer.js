@@ -17,7 +17,6 @@ export const useCustomerStore = defineStore('customer', {
       lead_status_id: null,
       assigned_sales_id: null,
       source: null,
-      next_action_status: null,
       sort_by: 'next_action_date',
       sort_order: 'asc',
     },
