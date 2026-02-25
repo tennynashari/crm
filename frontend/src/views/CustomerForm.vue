@@ -125,7 +125,7 @@
           </label>
           <textarea
             v-model="form.notes"
-            rows="4"
+            rows="6"
             class="input"
             :placeholder="$t('customerForm.notesPlaceholder')"
           ></textarea>
