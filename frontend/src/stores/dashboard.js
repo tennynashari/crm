@@ -5,6 +5,8 @@ export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
     stats: null,
     loading: false,
+    todayActions: [],
+    todayActionsLoading: false,
   }),
 
   actions: {
@@ -18,6 +20,19 @@ export const useDashboardStore = defineStore('dashboard', {
         throw error
       } finally {
         this.loading = false
+      }
+    },
+
+    async fetchTodayActions() {
+      this.todayActionsLoading = true
+      try {
+        const response = await api.get('/dashboard/today-actions')
+        this.todayActions = response.data
+        return response.data
+      } catch (error) {
+        throw error
+      } finally {
+        this.todayActionsLoading = false
       }
     },
   },

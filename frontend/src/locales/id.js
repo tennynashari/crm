@@ -27,7 +27,9 @@ export default {
     actionToday: '⏰ Aksi Hari Ini',
     hotLeads: '🔥 Lead Panas',
     leadsByStatus: 'Lead berdasarkan Status',
-    customersByArea: 'Pelanggan berdasarkan Area'
+    customersByArea: 'Pelanggan Berdasarkan Area',
+    nextActionToday: 'Aksi Hari Ini',
+    noActionsToday: 'Tidak ada aksi yang dijadwalkan hari ini'
   },
   
   // Customers Page

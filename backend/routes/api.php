@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/today-actions', [DashboardController::class, 'todayActions']);
 
     // Users
     Route::apiResource('users', UserController::class);

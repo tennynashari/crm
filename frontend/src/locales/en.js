@@ -27,7 +27,9 @@ export default {
     actionToday: '⏰ Action Today',
     hotLeads: '🔥 Hot Leads',
     leadsByStatus: 'Leads by Status',
-    customersByArea: 'Customers by Area'
+    customersByArea: 'Customers by Area',
+    nextActionToday: 'Next Action Today',
+    noActionsToday: 'No actions scheduled for today'
   },
   
   // Customers Page

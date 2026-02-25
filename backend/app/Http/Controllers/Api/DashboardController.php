@@ -92,4 +92,33 @@ class DashboardController extends Controller
             'total_customers' => $customerQuery->count(),
         ]);
     }
+
+    public function todayActions(Request $request)
+    {
+        $userId = $request->user()->id;
+        $role = $request->user()->role;
+
+        // Base query - if sales, only their customers
+        $query = Customer::query();
+        if ($role === 'sales') {
+            $query->where('assigned_sales_id', $userId);
+        }
+
+        // Filter customers with next_action_date = today
+        $customers = $query->whereDate('next_action_date', Carbon::today())
+            ->with([
+                'area',
+                'leadStatus',
+                'contacts' => function ($q) {
+                    $q->orderBy('is_primary', 'desc');
+                },
+                'interactions' => function ($q) {
+                    $q->orderBy('interaction_at', 'desc')->limit(1);
+                }
+            ])
+            ->orderBy('next_action_date', 'asc')
+            ->get();
+
+        return response()->json($customers);
+    }
 }
