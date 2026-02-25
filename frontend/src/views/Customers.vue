@@ -31,7 +31,7 @@
 
     <!-- Filters -->
     <div class="card mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <input
           v-model="filters.search"
           @input="handleSearch"
@@ -59,15 +59,15 @@
           <option value="inbound">{{ $t('customers.inbound') }}</option>
           <option value="outbound">{{ $t('customers.outbound') }}</option>
         </select>
+      </div>
 
-        <select v-model="filters.sort_by" @change="handleSortChange" class="input">
+      <!-- Sort Controls -->
+      <div class="mt-3 flex items-center gap-3">
+        <select v-model="filters.sort_by" @change="handleSortChange" class="input w-auto">
           <option value="next_action_date">{{ $t('customers.sortByNextAction') }}</option>
           <option value="last_interaction_date">{{ $t('customers.sortByLastInteraction') }}</option>
         </select>
-      </div>
 
-      <!-- Sort Order Toggle -->
-      <div class="mt-3 flex items-center">
         <button
           @click="toggleSortOrder"
           class="btn btn-secondary inline-flex items-center text-sm px-3 py-2"

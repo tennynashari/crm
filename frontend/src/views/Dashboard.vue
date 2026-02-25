@@ -53,45 +53,6 @@
         </div>
       </div>
 
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Leads by Status -->
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.leadsByStatus') }}</h3>
-          <div class="space-y-3">
-            <div
-              v-for="status in stats.leads_by_status"
-              :key="status.status"
-              class="flex items-center justify-between"
-            >
-              <div class="flex items-center">
-                <div
-                  class="w-3 h-3 rounded-full mr-3"
-                  :style="{ backgroundColor: status.color }"
-                ></div>
-                <span class="text-sm text-gray-700">{{ status.status }}</span>
-              </div>
-              <span class="text-sm font-semibold text-gray-900">{{ status.total }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Customers by Area -->
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.customersByArea') }}</h3>
-          <div class="space-y-3">
-            <div
-              v-for="area in stats.customers_by_area"
-              :key="area.area"
-              class="flex items-center justify-between"
-            >
-              <span class="text-sm text-gray-700">{{ area.area }}</span>
-              <span class="text-sm font-semibold text-gray-900">{{ area.total }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Next Action Today -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
@@ -192,6 +153,45 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Leads by Status -->
+        <div class="card">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.leadsByStatus') }}</h3>
+          <div class="space-y-3">
+            <div
+              v-for="status in stats.leads_by_status"
+              :key="status.status"
+              class="flex items-center justify-between"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-3 h-3 rounded-full mr-3"
+                  :style="{ backgroundColor: status.color }"
+                ></div>
+                <span class="text-sm text-gray-700">{{ status.status }}</span>
+              </div>
+              <span class="text-sm font-semibold text-gray-900">{{ status.total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customers by Area -->
+        <div class="card">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('dashboard.customersByArea') }}</h3>
+          <div class="space-y-3">
+            <div
+              v-for="area in stats.customers_by_area"
+              :key="area.area"
+              class="flex items-center justify-between"
+            >
+              <span class="text-sm text-gray-700">{{ area.area }}</span>
+              <span class="text-sm font-semibold text-gray-900">{{ area.total }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
