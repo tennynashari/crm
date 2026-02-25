@@ -81,11 +81,33 @@ class CustomerController extends Controller
             }
         }
 
-        // Sort - if next action filter is active, sort by next_action_date ascending
-        if ($hasNextActionFilter) {
-            $query->orderBy('next_action_date', 'asc');
+        // Sorting - support sort_by and sort_order
+        $sortBy = $request->get('sort_by', 'next_action_date');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        // Validate sort_by values
+        $allowedSortBy = ['next_action_date', 'last_interaction_date', 'created_at'];
+        if (!in_array($sortBy, $allowedSortBy)) {
+            $sortBy = 'next_action_date';
+        }
+        
+        // Validate sort_order
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'asc';
+        }
+
+        // Apply sorting based on sort_by parameter
+        if ($sortBy === 'last_interaction_date') {
+            // Sort by latest interaction date - need to use subquery
+            $query->leftJoin('interactions', function ($join) {
+                $join->on('customers.id', '=', 'interactions.customer_id')
+                    ->whereRaw('interactions.id = (select id from interactions where customer_id = customers.id order by interaction_at desc limit 1)');
+            })
+            ->orderBy('interactions.interaction_at', $sortOrder)
+            ->select('customers.*');
         } else {
-            $query->orderBy('created_at', 'desc');
+            // Sort by next_action_date or created_at
+            $query->orderBy($sortBy, $sortOrder);
         }
 
         $customers = $query->paginate($request->get('per_page', 15));

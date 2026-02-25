@@ -31,7 +31,7 @@
 
     <!-- Filters -->
     <div class="card mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <input
           v-model="filters.search"
           @input="handleSearch"
@@ -66,6 +66,27 @@
           <option value="this_week">{{ $t('customers.next7Days') }}</option>
           <option value="meeting">{{ $t('customers.upcomingMeeting') }}</option>
         </select>
+
+        <select v-model="filters.sort_by" @change="handleSortChange" class="input">
+          <option value="next_action_date">{{ $t('customers.sortByNextAction') }}</option>
+          <option value="last_interaction_date">{{ $t('customers.sortByLastInteraction') }}</option>
+        </select>
+      </div>
+
+      <!-- Sort Order Toggle -->
+      <div class="mt-3 flex items-center">
+        <button
+          @click="toggleSortOrder"
+          class="btn btn-secondary inline-flex items-center text-sm px-3 py-2"
+        >
+          <svg v-if="filters.sort_order === 'asc'" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+          </svg>
+          <svg v-else class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+          </svg>
+          {{ filters.sort_order === 'asc' ? $t('customers.sortAscending') : $t('customers.sortDescending') }}
+        </button>
       </div>
     </div>
 
@@ -287,6 +308,8 @@ const filters = ref({
   lead_status_id: null,
   source: null,
   next_action_status: null,
+  sort_by: 'next_action_date',
+  sort_order: 'asc',
 })
 
 let searchTimeout = null
@@ -301,6 +324,15 @@ const handleSearch = () => {
 const applyFilters = async () => {
   customerStore.setFilters(filters.value)
   await customerStore.fetchCustomers()
+}
+
+const handleSortChange = async () => {
+  await applyFilters()
+}
+
+const toggleSortOrder = async () => {
+  filters.value.sort_order = filters.value.sort_order === 'asc' ? 'desc' : 'asc'
+  await applyFilters()
 }
 
 const changePage = async (page) => {

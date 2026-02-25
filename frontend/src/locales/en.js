@@ -53,6 +53,10 @@ export default {
     next: 'Next',
     lastInteraction: 'Last Interaction',
     noHistory: 'No history',
+    sortByNextAction: 'Sort by Next Action',
+    sortByLastInteraction: 'Sort by Last Interaction',
+    sortAscending: 'Ascending (Oldest First)',
+    sortDescending: 'Descending (Newest First)',
     // Table headers
     company: 'Company',
     area: 'Area',

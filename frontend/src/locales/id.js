@@ -53,6 +53,10 @@ export default {
     next: 'Selanjutnya',
     lastInteraction: 'Interaksi Terakhir',
     noHistory: 'Tidak ada riwayat',
+    sortByNextAction: 'Urutkan Berdasarkan Aksi Berikutnya',
+    sortByLastInteraction: 'Urutkan Berdasarkan Interaksi Terakhir',
+    sortAscending: 'Naik (Terlama Dulu)',
+    sortDescending: 'Turun (Terbaru Dulu)',
     // Table headers
     company: 'Perusahaan',
     area: 'Area',
