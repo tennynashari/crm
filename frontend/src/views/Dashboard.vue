@@ -25,8 +25,9 @@
           {{ $t('dashboard.noActionsToday') }}
         </div>
 
-        <!-- Mobile View -->
-        <div v-else class="lg:hidden space-y-3">
+        <template v-else>
+          <!-- Mobile View -->
+          <div class="lg:hidden space-y-3">
           <div
             v-for="customer in todayActions"
             :key="customer.id"
@@ -79,7 +80,7 @@
         </div>
 
         <!-- Desktop View -->
-        <div v-else class="hidden lg:block overflow-x-auto">
+          <div class="hidden lg:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -163,6 +164,7 @@
             </tbody>
           </table>
         </div>
+        </template>
 
         <!-- Pagination -->
         <div v-if="todayActionsPagination.last_page > 1" class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:space-x-2 mt-4">
@@ -257,7 +259,7 @@
         </div>
 
         <!-- Desktop View -->
-        <div v-else class="hidden lg:block overflow-x-auto">
+          <div class="hidden lg:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
