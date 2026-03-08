@@ -1,11 +1,11 @@
 <template>
-  <div class="max-w-5xl mx-auto">
-    <h1 class="text-2xl font-semibold text-gray-900 mb-6">{{ $t('broadcastEmail.title') }}</h1>
+  <div class="max-w-5xl mx-auto px-4 sm:px-0">
+    <h1 class="text-xl lg:text-2xl font-semibold text-gray-900 mb-4 lg:mb-6">{{ $t('broadcastEmail.title') }}</h1>
 
-    <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="bg-white rounded-lg shadow-sm p-4 lg:p-6">
       <!-- Filter Section -->
-      <div class="mb-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">{{ $t('broadcastEmail.selectRecipients') }}</h2>
+      <div class="mb-4 lg:mb-6">
+        <h2 class="text-base lg:text-lg font-medium text-gray-900 mb-3 lg:mb-4">{{ $t('broadcastEmail.selectRecipients') }}</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Filter Type -->
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Recipients Preview -->
-      <div v-if="recipients.length > 0" class="mb-6">
+      <div v-if="recipients.length > 0" class="mb-4 lg:mb-6">
         <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
           <h3 class="text-sm font-medium text-blue-900 mb-2">
             {{ $t('broadcastEmail.recipientsPreview') }} ({{ recipientCount }} {{ $t('broadcastEmail.emails') }})
@@ -71,7 +71,7 @@
 
       <!-- Email Editor -->
       <div class="space-y-4">
-        <h2 class="text-lg font-medium text-gray-900">{{ $t('broadcastEmail.composeEmail') }}</h2>
+        <h2 class="text-base lg:text-lg font-medium text-gray-900">{{ $t('broadcastEmail.composeEmail') }}</h2>
 
         <!-- Remove To field since it's broadcast, only show Subject and Body with editor -->
         <div>
@@ -131,19 +131,19 @@
             <div
               v-for="(file, index) in emailFiles"
               :key="index"
-              class="flex items-center justify-between p-2 bg-gray-50 rounded border"
+              class="flex items-center justify-between p-2 bg-gray-50 rounded border gap-2"
             >
-              <div class="flex items-center space-x-2">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <svg class="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span class="text-sm text-gray-700">{{ file.name }}</span>
-                <span class="text-xs text-gray-500">({{ formatFileSize(file.size) }})</span>
+                <span class="text-sm text-gray-700 truncate">{{ file.name }}</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">({{ formatFileSize(file.size) }})</span>
               </div>
               <button
                 type="button"
                 @click="removeFile(index)"
-                class="text-red-600 hover:text-red-800"
+                class="text-red-600 hover:text-red-800 flex-shrink-0"
               >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -154,11 +154,11 @@
         </div>
 
         <!-- Send Button -->
-        <div class="flex justify-end space-x-3">
+        <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
           <button
             @click="saveDraft"
             :disabled="saving || (!emailForm.subject && !emailEditorData.body)"
-            class="btn btn-secondary"
+            class="btn btn-secondary w-full sm:w-auto order-2 sm:order-1"
           >
             <span v-if="saving">
               <svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@
           <button
             @click="sendBroadcast"
             :disabled="sending || recipients.length === 0 || !emailForm.subject || !emailEditorData.body"
-            class="btn btn-primary"
+            class="btn btn-primary w-full sm:w-auto order-1 sm:order-2"
           >
             <span v-if="sending">
               <svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24">

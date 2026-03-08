@@ -88,14 +88,14 @@
         </label>
       </div>
 
-      <div class="flex space-x-3">
+      <div class="flex flex-col sm:flex-row gap-3">
         <button type="submit" class="btn btn-primary flex-1" :disabled="submitting">
           {{ submitting ? $t('sales.saving') : (isEditMode ? $t('sales.update') : $t('sales.create')) }} {{ $t('sales.sales') }}
         </button>
         <button
           type="button"
           @click="$router.back()"
-          class="btn btn-secondary"
+          class="btn btn-secondary sm:w-auto"
           :disabled="submitting"
         >
           {{ $t('sales.cancel') }}

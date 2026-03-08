@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('broadcastEmail.historyTitle') }}</h1>
+    <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 lg:mb-8">{{ $t('broadcastEmail.historyTitle') }}</h1>
 
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -23,10 +23,10 @@
         :key="item.id"
         class="card hover:shadow-lg transition-shadow"
       >
-        <div class="flex items-start justify-between mb-3">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-3 mb-3">
           <div class="flex-1">
-            <div class="flex items-center space-x-2 mb-2">
-              <h3 class="text-lg font-semibold text-gray-900">{{ item.subject }}</h3>
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <h3 class="text-base lg:text-lg font-semibold text-gray-900">{{ item.subject }}</h3>
               <span v-if="item.has_attachments" class="text-gray-400" :title="$t('broadcastEmail.hasAttachments')">
                 📎
               </span>
@@ -58,7 +58,7 @@
               </div>
             </div>
           </div>
-          <div class="text-right text-sm text-gray-500">
+          <div class="text-left sm:text-right text-sm text-gray-500 flex-shrink-0">
             {{ formatDate(item.created_at) }}
           </div>
         </div>

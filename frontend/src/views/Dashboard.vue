@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('dashboard.title') }}</h1>
+    <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 lg:mb-8">{{ $t('dashboard.title') }}</h1>
 
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -10,9 +10,9 @@
     <div v-else-if="stats" class="space-y-6">
       <!-- Next Action Today -->
       <div class="card">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.nextActionToday') }}</h3>
-          <span v-if="todayActionsPagination.total > 0" class="badge bg-green-100 text-green-800">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('dashboard.nextActionToday') }}</h3>
+          <span v-if="todayActionsPagination.total > 0" class="badge bg-green-100 text-green-800 text-xs lg:text-sm">
             {{ todayActionsPagination.total }} {{ todayActionsPagination.total === 1 ? 'customer' : 'customers' }}
           </span>
         </div>
@@ -25,7 +25,61 @@
           {{ $t('dashboard.noActionsToday') }}
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <!-- Mobile View -->
+        <div v-else class="lg:hidden space-y-3">
+          <div
+            v-for="customer in todayActions"
+            :key="customer.id"
+            @click="goToDetail(customer.id)"
+            class="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 text-sm">{{ customer.company }}</h4>
+                <p class="text-xs text-gray-600">{{ customer.email }}</p>
+                <p v-if="customer.phone" class="text-xs text-gray-600">📞 {{ customer.phone }}</p>
+              </div>
+              <div class="flex flex-col items-end space-y-1 ml-2">
+                <span
+                  v-if="customer.lead_status"
+                  class="badge text-xs px-2 py-1 whitespace-nowrap"
+                  :style="{
+                    backgroundColor: customer.lead_status.color + '20',
+                    color: customer.lead_status.color,
+                  }"
+                >
+                  {{ customer.lead_status.name }}
+                </span>
+                <span
+                  class="badge text-xs px-2 py-1 whitespace-nowrap"
+                  :class="{
+                    'bg-green-100 text-green-800': customer.source === 'inbound',
+                    'bg-blue-100 text-blue-800': customer.source === 'outbound',
+                  }"
+                >
+                  {{ customer.source }}
+                </span>
+              </div>
+            </div>
+            <div class="space-y-1 text-xs text-gray-600">
+              <p v-if="customer.area">
+                <span class="font-medium">{{ $t('customers.area') }}:</span> {{ customer.area.name }}
+              </p>
+              <p v-if="customer.next_action_date" class="text-orange-600 font-medium">
+                <span class="font-bold">{{ $t('customers.next') }}:</span> {{ formatDate(customer.next_action_date) }}
+                <span v-if="customer.next_action_plan" class="block text-gray-600 font-normal mt-1">{{ customer.next_action_plan }}</span>
+              </p>
+              <div v-if="customer.interactions && customer.interactions.length > 0" class="pt-2 border-t">
+                <p class="font-medium text-gray-700">{{ $t('customers.lastInteraction') }}:</p>
+                <p class="text-xs text-gray-600">{{ formatDateTime(customer.interactions[0].interaction_at) }}</p>
+                <p class="text-xs text-gray-500 italic">{{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop View -->
+        <div v-else class="hidden lg:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -111,11 +165,11 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="todayActionsPagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-4">
+        <div v-if="todayActionsPagination.last_page > 1" class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:space-x-2 mt-4">
           <button
             @click="changeTodayActionsPage(todayActionsPagination.current_page - 1)"
             :disabled="todayActionsPagination.current_page === 1"
-            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto px-3 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -125,7 +179,7 @@
           <button
             @click="changeTodayActionsPage(todayActionsPagination.current_page + 1)"
             :disabled="todayActionsPagination.current_page === todayActionsPagination.last_page"
-            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto px-3 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -134,9 +188,9 @@
 
       <!-- This Week Meetings -->
       <div class="card">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.thisWeekMeetings') }}</h3>
-          <span v-if="weekMeetingsPagination.total > 0" class="badge bg-orange-100 text-orange-800">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('dashboard.thisWeekMeetings') }}</h3>
+          <span v-if="weekMeetingsPagination.total > 0" class="badge bg-orange-100 text-orange-800 text-xs lg:text-sm">
             {{ weekMeetingsPagination.total }} {{ weekMeetingsPagination.total === 1 ? 'customer' : 'customers' }}
           </span>
         </div>
@@ -149,7 +203,61 @@
           {{ $t('dashboard.noMeetingsThisWeek') }}
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <!-- Mobile View -->
+        <div v-else class="lg:hidden space-y-3">
+          <div
+            v-for="customer in weekMeetings"
+            :key="customer.id"
+            @click="goToDetail(customer.id)"
+            class="bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 text-sm">{{ customer.company }}</h4>
+                <p class="text-xs text-gray-600">{{ customer.email }}</p>
+                <p v-if="customer.phone" class="text-xs text-gray-600">📞 {{ customer.phone }}</p>
+              </div>
+              <div class="flex flex-col items-end space-y-1 ml-2">
+                <span
+                  v-if="customer.lead_status"
+                  class="badge text-xs px-2 py-1 whitespace-nowrap"
+                  :style="{
+                    backgroundColor: customer.lead_status.color + '20',
+                    color: customer.lead_status.color,
+                  }"
+                >
+                  {{ customer.lead_status.name }}
+                </span>
+                <span
+                  class="badge text-xs px-2 py-1 whitespace-nowrap"
+                  :class="{
+                    'bg-green-100 text-green-800': customer.source === 'inbound',
+                    'bg-blue-100 text-blue-800': customer.source === 'outbound',
+                  }"
+                >
+                  {{ customer.source }}
+                </span>
+              </div>
+            </div>
+            <div class="space-y-1 text-xs text-gray-600">
+              <p v-if="customer.area">
+                <span class="font-medium">{{ $t('customers.area') }}:</span> {{ customer.area.name }}
+              </p>
+              <p v-if="customer.next_action_date" class="text-orange-600 font-medium">
+                <span class="font-bold">{{ $t('customers.next') }}:</span> {{ formatDate(customer.next_action_date) }}
+                <span v-if="customer.next_action_plan" class="block text-gray-600 font-normal mt-1">{{ customer.next_action_plan }}</span>
+              </p>
+              <div v-if="customer.interactions && customer.interactions.length > 0" class="pt-2 border-t">
+                <p class="font-medium text-gray-700">{{ $t('customers.lastInteraction') }}:</p>
+                <p class="text-xs text-gray-600">{{ formatDateTime(customer.interactions[0].interaction_at) }}</p>
+                <p class="text-xs text-gray-500 italic">{{ customer.interactions[0].summary || customer.interactions[0].content || '-' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop View -->
+        <div v-else class="hidden lg:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -235,11 +343,11 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="weekMeetingsPagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-4">
+        <div v-if="weekMeetingsPagination.last_page > 1" class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:space-x-2 mt-4">
           <button
             @click="changeWeekMeetingsPage(weekMeetingsPagination.current_page - 1)"
             :disabled="weekMeetingsPagination.current_page === 1"
-            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto px-3 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -249,7 +357,7 @@
           <button
             @click="changeWeekMeetingsPage(weekMeetingsPagination.current_page + 1)"
             :disabled="weekMeetingsPagination.current_page === weekMeetingsPagination.last_page"
-            class="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto px-3 py-2 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -257,12 +365,12 @@
       </div>
 
       <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <!-- Leads by Status -->
         <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.leadsByStatus') }}</h3>
-            <span class="badge bg-red-100 text-red-800">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('dashboard.leadsByStatus') }}</h3>
+            <span class="badge bg-red-100 text-red-800 text-xs lg:text-sm">
               🔥 {{ stats.hot_leads }} {{ $t('dashboard.hotLeads').replace('🔥 ', '') }}
             </span>
           </div>
@@ -286,9 +394,9 @@
 
         <!-- Customers by Area -->
         <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">{{ $t('dashboard.customersByArea') }}</h3>
-            <span class="badge bg-blue-100 text-blue-800">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('dashboard.customersByArea') }}</h3>
+            <span class="badge bg-blue-100 text-blue-800 text-xs lg:text-sm">
               👥 {{ stats.total_customers }} {{ $t('dashboard.totalCustomers') }}
             </span>
           </div>

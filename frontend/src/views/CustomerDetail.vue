@@ -6,21 +6,23 @@
 
   <div v-else-if="customer" class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <router-link to="/customers" class="text-gray-600 hover:text-gray-900">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-      </router-link>
-      <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">
-        {{ customer.company }}
-        <span v-if="customer.is_individual" class="text-sm text-gray-500 font-normal ml-2">({{ $t('customerDetail.individual') }})</span>
-      </h1>
-      <div class="flex space-x-2">
+    <div class="space-y-4">
+      <div class="flex items-center gap-4">
+        <router-link to="/customers" class="text-gray-600 hover:text-gray-900 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </router-link>
+        <h1 class="text-xl lg:text-3xl font-bold text-gray-800 flex-1">
+          {{ customer.company }}
+          <span v-if="customer.is_individual" class="text-xs lg:text-sm text-gray-500 font-normal ml-2">({{ $t('customerDetail.individual') }})</span>
+        </h1>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
         <button
           @click="exportToExcel"
           :disabled="exportLoading"
-          class="btn bg-green-600 hover:bg-green-700 text-white"
+          class="btn bg-green-600 hover:bg-green-700 text-white inline-flex items-center justify-center"
           title="Export customer detail to Excel"
         >
           <svg v-if="!exportLoading" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,14 +33,14 @@
         </button>
         <router-link
           :to="`/customers/${customer.id}/edit`"
-          class="btn btn-secondary"
+          class="btn btn-secondary inline-flex items-center justify-center"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
           {{ $t('customerDetail.edit') }}
         </router-link>
-        <button @click="handleDelete" class="btn bg-red-600 hover:bg-red-700 text-white">
+        <button @click="handleDelete" class="btn bg-red-600 hover:bg-red-700 text-white inline-flex items-center justify-center">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
@@ -104,11 +106,11 @@
 
     <!-- Contacts (PICs) Card -->
     <div class="card">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">{{ $t('customerDetail.contactsTitle') }}</h3>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('customerDetail.contactsTitle') }}</h3>
         <button
           @click="showContactModal = true"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm inline-flex items-center justify-center"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -156,7 +158,7 @@
                 </p>
               </div>
             </div>
-            <div class="flex space-x-1">
+            <div class="flex gap-1 flex-shrink-0">
               <button
                 type="button"
                 @click="editContact(contact)"
@@ -189,7 +191,7 @@
 
     <!-- Next Action Card -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.nextActionTitle') }}</h3>
+      <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.nextActionTitle') }}</h3>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-600 mb-1">{{ $t('customerDetail.date') }}</label>
@@ -252,7 +254,7 @@
 
     <!-- Interactions Timeline -->
     <div class="card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.historyTitle') }}</h3>
+      <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-4">{{ $t('customerDetail.historyTitle') }}</h3>
       
       <div v-if="interactions && interactions.length > 0" class="space-y-4">
         <div
@@ -283,7 +285,7 @@
                 {{ $t('customerDetail.outbound') }}
               </span>
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2 flex-shrink-0">
               <span class="text-xs text-gray-500">
                 {{ formatDateTime(interaction.interaction_at) }}
               </span>
@@ -324,11 +326,11 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="interactionPagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-6 pt-4 border-t">
+        <div v-if="interactionPagination.last_page > 1" class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:space-x-2 mt-6 pt-4 border-t">
           <button
             @click="changeInteractionPage(interactionPagination.current_page - 1)"
             :disabled="interactionPagination.current_page === 1"
-            class="px-3 py-1 rounded border text-sm"
+            class="w-full sm:w-auto px-3 py-2 rounded border text-sm"
             :class="interactionPagination.current_page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
             {{ $t('customerDetail.previous') }}
@@ -339,7 +341,7 @@
           <button
             @click="changeInteractionPage(interactionPagination.current_page + 1)"
             :disabled="interactionPagination.current_page === interactionPagination.last_page"
-            class="px-3 py-1 rounded border text-sm"
+            class="w-full sm:w-auto px-3 py-2 rounded border text-sm"
             :class="interactionPagination.current_page === interactionPagination.last_page ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
             {{ $t('customerDetail.next') }}
@@ -354,11 +356,11 @@
 
     <!-- Sales / Invoices Section -->
     <div class="card">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">{{ $t('customerDetail.salesTitle') }}</h3>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h3 class="text-base lg:text-lg font-semibold text-gray-800">{{ $t('customerDetail.salesTitle') }}</h3>
         <button
           @click="showInvoiceModal = true"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary btn-sm inline-flex items-center justify-center"
         >
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -398,7 +400,7 @@
               <div class="text-lg font-bold text-gray-900">
                 Rp {{ formatNumber(invoice.total) }}
               </div>
-              <div class="flex items-center space-x-1 mt-1">
+              <div class="flex items-center gap-1 mt-1">
                 <button
                   type="button"
                   @click="editInvoice(invoice)"
@@ -448,11 +450,11 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="invoicePagination.last_page > 1" class="flex justify-center items-center space-x-2 mt-6 pt-4 border-t">
+        <div v-if="invoicePagination.last_page > 1" class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:space-x-2 mt-6 pt-4 border-t">
           <button
             @click="changeInvoicePage(invoicePagination.current_page - 1)"
             :disabled="invoicePagination.current_page === 1"
-            class="px-3 py-1 rounded border text-sm"
+            class="w-full sm:w-auto px-3 py-2 rounded border text-sm"
             :class="invoicePagination.current_page === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
             {{ $t('customerDetail.previous') }}
@@ -463,7 +465,7 @@
           <button
             @click="changeInvoicePage(invoicePagination.current_page + 1)"
             :disabled="invoicePagination.current_page === invoicePagination.last_page"
-            class="px-3 py-1 rounded border text-sm"
+            class="w-full sm:w-auto px-3 py-2 rounded border text-sm"
             :class="invoicePagination.current_page === invoicePagination.last_page ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
           >
             {{ $t('customerDetail.next') }}

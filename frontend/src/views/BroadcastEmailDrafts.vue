@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">{{ $t('broadcastEmail.draftsTitle') }}</h1>
-      <router-link to="/broadcast-email" class="btn btn-primary">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
+      <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">{{ $t('broadcastEmail.draftsTitle') }}</h1>
+      <router-link to="/broadcast-email" class="btn btn-primary inline-flex items-center justify-center">
         ✉️ {{ $t('broadcastEmail.newBroadcast') }}
       </router-link>
     </div>
@@ -28,10 +28,10 @@
         :key="draft.id"
         class="card hover:shadow-lg transition-shadow"
       >
-        <div class="flex items-start justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-3">
           <div class="flex-1">
-            <div class="flex items-center space-x-2 mb-2">
-              <h3 class="text-lg font-semibold text-gray-900">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <h3 class="text-base lg:text-lg font-semibold text-gray-900">
                 {{ draft.subject || $t('broadcastEmail.noSubject') }}
               </h3>
               <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
@@ -64,7 +64,7 @@
             <div v-else class="text-sm text-gray-400 italic">{{ $t('broadcastEmail.noContent') }}</div>
           </div>
 
-          <div class="flex items-center space-x-2 ml-4">
+          <div class="flex items-center gap-2 sm:ml-4 flex-shrink-0">
             <router-link
               :to="`/broadcast-email?draftId=${draft.id}`"
               class="p-2 text-primary-600 hover:bg-primary-50 rounded transition-colors"

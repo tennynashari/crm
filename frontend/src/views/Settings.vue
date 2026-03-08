@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ $t('settings.title') }}</h1>
+    <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 lg:mb-8">{{ $t('settings.title') }}</h1>
 
     <div class="card max-w-2xl">
       <div v-if="loading" class="text-center py-12">
@@ -29,7 +29,7 @@
           <p class="text-xs text-gray-500 mt-1">{{ $t('settings.mailServerExample') }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               {{ $t('settings.port') }} <span class="text-red-500">{{ $t('settings.required') }}</span>
