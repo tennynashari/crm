@@ -31,6 +31,8 @@ predictor = CustomerPredictor()
 
 # Response Models
 class HealthResponse(BaseModel):
+    model_config = {'protected_namespaces': ()}
+    
     status: str
     service: str
     version: str
@@ -38,6 +40,8 @@ class HealthResponse(BaseModel):
     model_info: Optional[dict] = None
 
 class TrainResponse(BaseModel):
+    model_config = {'protected_namespaces': ()}
+    
     success: bool
     message: str
     trained_at: str
@@ -54,6 +58,8 @@ class PredictionResult(BaseModel):
     details: dict
 
 class PredictResponse(BaseModel):
+    model_config = {'protected_namespaces': ()}
+    
     success: bool
     predictions: List[PredictionResult]
     generated_at: str
