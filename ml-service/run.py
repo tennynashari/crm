@@ -11,7 +11,7 @@ load_dotenv()
 
 if __name__ == "__main__":
     host = os.getenv("ML_SERVICE_HOST", "127.0.0.1")
-    port = int(os.getenv("ML_SERVICE_PORT", 5000))
+    port = int(os.getenv("ML_SERVICE_PORT", 5010))
     
     print(f"Starting CRM ML Service on {host}:{port}")
     
