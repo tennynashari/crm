@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\EmailSettingController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\BroadcastEmailController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\MLController;
 
 // CSRF cookie route - MUST be in api.php with web middleware
 Route::get('/csrf-cookie', function () {
@@ -101,4 +102,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/broadcast-email/drafts', [BroadcastEmailController::class, 'saveDraft']);
     Route::put('/broadcast-email/drafts/{id}', [BroadcastEmailController::class, 'updateDraft']);
     Route::delete('/broadcast-email/drafts/{id}', [BroadcastEmailController::class, 'deleteDraft']);
+
+    // ML Prediction
+    Route::prefix('ml')->group(function () {
+        Route::get('/health', [MLController::class, 'health']);
+        Route::post('/train', [MLController::class, 'train']);
+        Route::post('/predict', [MLController::class, 'predict']);
+        Route::get('/model-info', [MLController::class, 'modelInfo']);
+    });
 });

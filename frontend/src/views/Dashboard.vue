@@ -8,6 +8,90 @@
     </div>
 
     <div v-else-if="stats" class="space-y-6">
+      <!-- AI Customer Prediction -->
+      <div class="card bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-3xl">🤖</div>
+          <div>
+            <h3 class="text-base lg:text-lg font-semibold text-gray-800">AI Customer Prediction</h3>
+            <p class="text-xs text-gray-600">Top 7 customer potensial berdasarkan ML</p>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="flex flex-col sm:flex-row gap-2 mb-4">
+          <button
+            @click="trainModel"
+            :disabled="training"
+            class="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            <span v-if="training" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+            <span>{{ training ? 'Training...' : '🔄 Fetch & Train Model' }}</span>
+          </button>
+          <button
+            @click="predict"
+            :disabled="predicting || !modelInfo?.model_exists"
+            class="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
+            <span v-if="predicting" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+            <span>{{ predicting ? 'Predicting...' : '🎯 Predict Top Customers' }}</span>
+          </button>
+        </div>
+
+        <!-- Model Info -->
+        <div v-if="modelInfo?.model_exists" class="text-xs text-gray-600 bg-white/50 rounded p-2 mb-3">
+          <span class="font-semibold">Model Status:</span> Trained ✓ | 
+          <span class="font-semibold">Last trained:</span> {{ formatDateTime(modelInfo.info?.trained_at) }} |
+          <span class="font-semibold">Customers:</span> {{ modelInfo.info?.customers_count }}
+        </div>
+        <div v-else-if="modelInfo !== null" class="text-xs text-amber-600 bg-amber-50 rounded p-2 mb-3">
+          ⚠️ Model belum di-train. Klik "Fetch & Train Model" untuk mulai.
+        </div>
+
+        <!-- Success Message -->
+        <div v-if="trainSuccess" class="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-sm mb-3">
+          ✓ {{ trainSuccess }}
+        </div>
+
+        <!-- Error Message -->
+        <div v-if="mlError" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm mb-3">
+          ✗ {{ mlError }}
+        </div>
+
+        <!-- Predictions Display -->
+        <div v-if="predictions.length > 0" class="space-y-2">
+          <div
+            v-for="(pred, idx) in predictions"
+            :key="pred.customer_id"
+            @click="goToDetail(pred.customer_id)"
+            class="flex items-center justify-between p-3 bg-white rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+          >
+            <div class="flex items-center gap-3 flex-1">
+              <div class="flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm lg:text-lg">
+                {{ idx + 1 }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-semibold text-gray-900 text-sm lg:text-base truncate">{{ pred.company }}</h4>
+                <p class="text-xs text-gray-600 truncate">{{ pred.email }}</p>
+                <p class="text-xs text-blue-600 mt-1">{{ pred.reason }}</p>
+              </div>
+            </div>
+            <div class="text-right ml-2 flex-shrink-0">
+              <div class="text-lg lg:text-2xl font-bold text-blue-600">
+                {{ pred.score.toFixed(1) }}
+              </div>
+              <p class="text-xs text-gray-500">score</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="!predicting && !training" class="text-center py-8 text-gray-500">
+          <div class="text-4xl mb-2">🎯</div>
+          <p class="text-sm">Klik "Predict" untuk melihat top 7 customer potensial</p>
+        </div>
+      </div>
+
       <!-- Next Action Today -->
       <div class="card">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
@@ -422,6 +506,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboard'
+import axios from '@/api/axios'
 
 const router = useRouter()
 const dashboardStore = useDashboardStore()
@@ -435,6 +520,14 @@ const todayActionsPagination = computed(() => dashboardStore.todayActionsPaginat
 const weekMeetings = computed(() => dashboardStore.weekMeetings)
 const weekMeetingsLoading = computed(() => dashboardStore.weekMeetingsLoading)
 const weekMeetingsPagination = computed(() => dashboardStore.weekMeetingsPagination)
+
+// AI Prediction state
+const training = ref(false)
+const predicting = ref(false)
+const predictions = ref([])
+const modelInfo = ref(null)
+const trainSuccess = ref('')
+const mlError = ref('')
 
 const goToDetail = (id) => {
   router.push(`/customers/${id}`)
@@ -468,6 +561,64 @@ const changeWeekMeetingsPage = async (page) => {
   await dashboardStore.fetchWeekMeetings(page)
 }
 
+// AI Prediction functions
+const fetchModelInfo = async () => {
+  try {
+    const response = await axios.get('/ml/model-info')
+    modelInfo.value = response.data
+  } catch (error) {
+    console.error('Error fetching model info:', error)
+    modelInfo.value = { model_exists: false }
+  }
+}
+
+const trainModel = async () => {
+  training.value = true
+  trainSuccess.value = ''
+  mlError.value = ''
+  
+  try {
+    const response = await axios.post('/ml/train')
+    
+    if (response.data.success) {
+      trainSuccess.value = `Model berhasil di-train! (${response.data.data.customers_count} customers)`
+      await fetchModelInfo()
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        trainSuccess.value = ''
+      }, 5000)
+    } else {
+      mlError.value = response.data.message || 'Gagal training model'
+    }
+  } catch (error) {
+    console.error('Training error:', error)
+    mlError.value = error.response?.data?.message || 'Error saat training model. Pastikan ML service berjalan.'
+  } finally {
+    training.value = false
+  }
+}
+
+const predict = async () => {
+  predicting.value = true
+  mlError.value = ''
+  
+  try {
+    const response = await axios.post('/ml/predict')
+    
+    if (response.data.success) {
+      predictions.value = response.data.data.predictions
+    } else {
+      mlError.value = response.data.message || 'Gagal mendapatkan prediksi'
+    }
+  } catch (error) {
+    console.error('Prediction error:', error)
+    mlError.value = error.response?.data?.message || 'Error saat prediksi. Pastikan model sudah di-train.'
+  } finally {
+    predicting.value = false
+  }
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -475,6 +626,7 @@ onMounted(async () => {
       dashboardStore.fetchStats(),
       dashboardStore.fetchTodayActions(),
       dashboardStore.fetchWeekMeetings(),
+      fetchModelInfo(), // Fetch model info on mount
     ])
     stats.value = statsData
   } catch (error) {
