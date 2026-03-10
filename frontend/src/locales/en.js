@@ -31,7 +31,24 @@ export default {
     nextActionToday: 'Next Action Today',
     noActionsToday: 'No actions scheduled for today',
     thisWeekMeetings: 'This Week Meetings',
-    noMeetingsThisWeek: 'No meetings scheduled this week'
+    noMeetingsThisWeek: 'No meetings scheduled this week',
+    // AI Prediction
+    aiPrediction: {
+      title: 'AI Customer Prediction',
+      subtitle: 'Top 7 potential customers based on ML',
+      trainButton: 'Fetch & Train Model',
+      training: 'Training...',
+      predictButton: 'Predict Top Customers',
+      predicting: 'Predicting...',
+      modelStatus: 'Model Status',
+      trained: 'Trained',
+      lastTrained: 'Last trained',
+      customers: 'Customers',
+      modelNotTrained: 'Model not trained yet. Click "Fetch & Train Model" to start.',
+      trainSuccess: 'Model trained successfully!',
+      score: 'score',
+      emptyState: 'Click "Predict" to see top 7 potential customers'
+    }
   },
   
   // Customers Page

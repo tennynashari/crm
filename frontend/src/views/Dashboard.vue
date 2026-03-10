@@ -10,11 +10,11 @@
     <div v-else-if="stats" class="space-y-6">
       <!-- AI Customer Prediction -->
       <div class="card bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="text-3xl">🤖</div>
-          <div>
-            <h3 class="text-base lg:text-lg font-semibold text-gray-800">AI Customer Prediction</h3>
-            <p class="text-xs text-gray-600">Top 7 customer potensial berdasarkan ML</p>
+        <div class="flex items-center gap-2 sm:gap-3 mb-4">
+          <div class="text-2xl sm:text-3xl">🤖</div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-gray-800 truncate">{{ $t('dashboard.aiPrediction.title') }}</h3>
+            <p class="text-xs text-gray-600 hidden sm:block">{{ $t('dashboard.aiPrediction.subtitle') }}</p>
           </div>
         </div>
 
@@ -23,38 +23,42 @@
           <button
             @click="trainModel"
             :disabled="training"
-            class="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
+            class="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base"
           >
             <span v-if="training" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-            <span>{{ training ? 'Training...' : '🔄 Fetch & Train Model' }}</span>
+            <span>{{ training ? $t('dashboard.aiPrediction.training') : '🔄 ' + $t('dashboard.aiPrediction.trainButton') }}</span>
           </button>
           <button
             @click="predict"
             :disabled="predicting || !modelInfo?.model_exists"
-            class="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+            class="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto text-sm sm:text-base"
           >
             <span v-if="predicting" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-            <span>{{ predicting ? 'Predicting...' : '🎯 Predict Top Customers' }}</span>
+            <span>{{ predicting ? $t('dashboard.aiPrediction.predicting') : '🎯 ' + $t('dashboard.aiPrediction.predictButton') }}</span>
           </button>
         </div>
 
         <!-- Model Info -->
-        <div v-if="modelInfo?.model_exists" class="text-xs text-gray-600 bg-white/50 rounded p-2 mb-3">
-          <span class="font-semibold">Model Status:</span> Trained ✓ | 
-          <span class="font-semibold">Last trained:</span> {{ formatDateTime(modelInfo.info?.trained_at) }} |
-          <span class="font-semibold">Customers:</span> {{ modelInfo.info?.customers_count }}
+        <div v-if="modelInfo?.model_exists" class="text-xs sm:text-sm text-gray-600 bg-white/50 rounded p-2 sm:p-3 mb-3 overflow-x-auto">
+          <div class="flex flex-wrap gap-x-3 gap-y-1">
+            <span><span class="font-semibold">{{ $t('dashboard.aiPrediction.modelStatus') }}:</span> {{ $t('dashboard.aiPrediction.trained') }} ✓</span>
+            <span class="hidden sm:inline">|</span>
+            <span><span class="font-semibold">{{ $t('dashboard.aiPrediction.lastTrained') }}:</span> {{ formatDateTime(modelInfo.info?.trained_at) }}</span>
+            <span class="hidden sm:inline">|</span>
+            <span><span class="font-semibold">{{ $t('dashboard.aiPrediction.customers') }}:</span> {{ modelInfo.info?.customers_count }}</span>
+          </div>
         </div>
-        <div v-else-if="modelInfo !== null" class="text-xs text-amber-600 bg-amber-50 rounded p-2 mb-3">
-          ⚠️ Model belum di-train. Klik "Fetch & Train Model" untuk mulai.
+        <div v-else-if="modelInfo !== null" class="text-xs sm:text-sm text-amber-700 bg-amber-50 rounded p-2 sm:p-3 mb-3">
+          ⚠️ {{ $t('dashboard.aiPrediction.modelNotTrained') }}
         </div>
 
         <!-- Success Message -->
-        <div v-if="trainSuccess" class="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-sm mb-3">
+        <div v-if="trainSuccess" class="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-xs sm:text-sm mb-3">
           ✓ {{ trainSuccess }}
         </div>
 
         <!-- Error Message -->
-        <div v-if="mlError" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm mb-3">
+        <div v-if="mlError" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs sm:text-sm mb-3 break-words">
           ✗ {{ mlError }}
         </div>
 
@@ -64,31 +68,31 @@
             v-for="(pred, idx) in predictions"
             :key="pred.customer_id"
             @click="goToDetail(pred.customer_id)"
-            class="flex items-center justify-between p-3 bg-white rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+            class="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
           >
-            <div class="flex items-center gap-3 flex-1">
-              <div class="flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm lg:text-lg">
+            <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div class="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs sm:text-sm lg:text-lg">
                 {{ idx + 1 }}
               </div>
               <div class="flex-1 min-w-0">
-                <h4 class="font-semibold text-gray-900 text-sm lg:text-base truncate">{{ pred.company }}</h4>
+                <h4 class="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base truncate">{{ pred.company }}</h4>
                 <p class="text-xs text-gray-600 truncate">{{ pred.email }}</p>
-                <p class="text-xs text-blue-600 mt-1">{{ pred.reason }}</p>
+                <p class="text-xs text-blue-600 mt-1 line-clamp-2">{{ pred.reason }}</p>
               </div>
             </div>
             <div class="text-right ml-2 flex-shrink-0">
-              <div class="text-lg lg:text-2xl font-bold text-blue-600">
+              <div class="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">
                 {{ pred.score.toFixed(1) }}
               </div>
-              <p class="text-xs text-gray-500">score</p>
+              <p class="text-xs text-gray-500">{{ $t('dashboard.aiPrediction.score') }}</p>
             </div>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="!predicting && !training" class="text-center py-8 text-gray-500">
-          <div class="text-4xl mb-2">🎯</div>
-          <p class="text-sm">Klik "Predict" untuk melihat top 7 customer potensial</p>
+        <div v-else-if="!predicting && !training" class="text-center py-6 sm:py-8 text-gray-500">
+          <div class="text-3xl sm:text-4xl mb-2">🎯</div>
+          <p class="text-xs sm:text-sm px-4">{{ $t('dashboard.aiPrediction.emptyState') }}</p>
         </div>
       </div>
 

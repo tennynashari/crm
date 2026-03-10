@@ -31,7 +31,24 @@ export default {
     nextActionToday: 'Aksi Hari Ini',
     noActionsToday: 'Tidak ada aksi yang dijadwalkan hari ini',
     thisWeekMeetings: 'Meeting Minggu Ini',
-    noMeetingsThisWeek: 'Tidak ada meeting yang dijadwalkan minggu ini'
+    noMeetingsThisWeek: 'Tidak ada meeting yang dijadwalkan minggu ini',
+    // AI Prediction
+    aiPrediction: {
+      title: 'Prediksi Customer AI',
+      subtitle: 'Top 7 customer potensial berdasarkan ML',
+      trainButton: 'Latih Model',
+      training: 'Melatih...',
+      predictButton: 'Prediksi Top Customer',
+      predicting: 'Memprediksi...',
+      modelStatus: 'Status Model',
+      trained: 'Terlatih',
+      lastTrained: 'Terakhir dilatih',
+      customers: 'Pelanggan',
+      modelNotTrained: 'Model belum di-train. Klik "Latih Model" untuk mulai.',
+      trainSuccess: 'Model berhasil di-training!',
+      score: 'skor',
+      emptyState: 'Klik "Prediksi" untuk melihat top 7 customer potensial'
+    }
   },
   
   // Customers Page
