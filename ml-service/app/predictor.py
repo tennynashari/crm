@@ -200,11 +200,19 @@ class CustomerPredictor:
             else:
                 top_customers = df.nlargest(min(top_n, len(df)), 'prediction_score')
             
+            # Calculate total for percentile
+            total_customers = len(df)
+            
             # Format results
             predictions = []
             for rank, (_, row) in enumerate(top_customers.iterrows(), 1):
                 # Generate reason text
                 reason = self._generate_reason(row)
+                
+                # Calculate percentile (100 = best, 0 = worst)
+                # Percentile represents: "This customer is better than X% of customers"
+                percentile = 100 - ((rank / total_customers) * 100)
+                percentile_score = round(percentile, 1)
                 
                 # Extract key details
                 details = {
@@ -222,6 +230,7 @@ class CustomerPredictor:
                     "email": row['email'],
                     "area": row['area_name'] if pd.notna(row.get('area_name')) else 'No Area',
                     "score": float(row['prediction_score']),
+                    "percentile_score": percentile_score,  # 0-100 normalized score
                     "rank": rank,
                     "reason": reason,
                     "details": details
@@ -284,18 +293,16 @@ class CustomerPredictor:
                 raise Exception("Model not trained yet")
             
             # Get all predictions to calculate ranking
-            all_predictions = self.predict_top_customers(top_n=None)  # Get all
+            all_predictions = self.predict_top_customers(top_n=None)  # Get all (includes percentile_score)
             
             # Find the specific customer
             customer_prediction = None
-            for idx, pred in enumerate(all_predictions):
+            for pred in all_predictions:
                 if pred["customer_id"] == customer_id:
-                    customer_prediction = pred
-                    customer_prediction["rank"] = idx + 1
-                    # Calculate percentile (top X%)
-                    total_customers = len(all_predictions)
-                    percentile = ((idx + 1) / total_customers) * 100
-                    customer_prediction["percentile"] = round(percentile, 1)
+                    # Use percentile_score from prediction (already calculated correctly)
+                    customer_prediction = pred.copy()
+                    # Keep percentile_score as is (100 = best, 0 = worst)
+                    customer_prediction["percentile"] = customer_prediction["percentile_score"]
                     break
             
             return customer_prediction

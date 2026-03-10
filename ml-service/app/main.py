@@ -54,6 +54,7 @@ class PredictionResult(BaseModel):
     email: str
     area: str
     score: float
+    percentile_score: float  # 0-100 normalized score based on percentile
     rank: int
     reason: str
     details: dict

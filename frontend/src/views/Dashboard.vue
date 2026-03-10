@@ -84,10 +84,20 @@
               </div>
             </div>
             <div class="text-right ml-2 flex-shrink-0">
-              <div class="text-base sm:text-lg lg:text-2xl font-bold text-blue-600">
-                {{ pred.score.toFixed(1) }}
+              <div class="flex flex-col items-end gap-0.5">
+                <!-- Percentile Score (Primary - Large) -->
+                <div class="text-xl sm:text-2xl lg:text-3xl font-bold" :class="getScoreColor(pred.percentile_score)">
+                  {{ pred.percentile_score.toFixed(0) }}
+                </div>
+                <!-- Badge -->
+                <div class="text-xs px-2 py-0.5 rounded-full font-semibold" :class="getScoreBadgeClass(pred.percentile_score)">
+                  {{ getScoreBadgeLabel(pred.percentile_score) }}
+                </div>
+                <!-- Raw Score (Secondary - Small) -->
+                <p class="text-xs text-gray-400 mt-1" :title="'Raw score: ' + pred.score.toFixed(0)">
+                  {{ formatRawScore(pred.score) }}
+                </p>
               </div>
-              <p class="text-xs text-gray-500">{{ $t('dashboard.aiPrediction.score') }}</p>
             </div>
           </div>
         </div>
@@ -563,6 +573,37 @@ const formatDateTime = (datetime) => {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+// Percentile Score Helper Functions
+const getScoreColor = (percentile) => {
+  if (percentile >= 90) return 'text-green-600'
+  if (percentile >= 75) return 'text-blue-600'
+  if (percentile >= 50) return 'text-yellow-600'
+  return 'text-gray-600'
+}
+
+const getScoreBadgeClass = (percentile) => {
+  if (percentile >= 90) return 'bg-green-100 text-green-800'
+  if (percentile >= 75) return 'bg-blue-100 text-blue-800'
+  if (percentile >= 50) return 'bg-yellow-100 text-yellow-800'
+  return 'bg-gray-100 text-gray-800'
+}
+
+const getScoreBadgeLabel = (percentile) => {
+  if (percentile >= 90) return '🏆 Excellent'
+  if (percentile >= 75) return '⭐ High'
+  if (percentile >= 50) return '✓ Good'
+  return '○ Average'
+}
+
+const formatRawScore = (score) => {
+  if (score >= 1000000) {
+    return (score / 1000000).toFixed(1) + 'M'
+  } else if (score >= 1000) {
+    return (score / 1000).toFixed(0) + 'K'
+  }
+  return score.toFixed(0)
 }
 
 const changeTodayActionsPage = async (page) => {

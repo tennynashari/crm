@@ -130,11 +130,16 @@
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="flex-1">
               <div class="text-xs sm:text-sm text-gray-600 mb-1">{{ $t('customerDetail.aiPrediction.potentialScore') }}</div>
-              <div class="text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-600">
-                {{ aiPrediction.score.toFixed(1) }}
+              <!-- Percentile Score (Primary - Large) -->
+              <div class="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600">
+                {{ aiPrediction.percentile.toFixed(0) }}
               </div>
               <div class="text-xs sm:text-sm text-gray-500 mt-1">
-                {{ $t('customerDetail.aiPrediction.rank') }}: #{{ aiPrediction.rank }} ({{ $t('customerDetail.aiPrediction.top') }} {{ aiPrediction.percentile }}%)
+                {{ $t('customerDetail.aiPrediction.rank') }}: #{{ aiPrediction.rank }} ({{ $t('customerDetail.aiPrediction.top') }} {{ aiPrediction.percentile.toFixed(1) }}%)
+              </div>
+              <!-- Raw Score (Secondary - Small) -->
+              <div class="text-xs text-gray-400 mt-2" :title="'Raw score: ' + aiPrediction.score.toFixed(0)">
+                Raw: {{ formatRawScore(aiPrediction.score) }}
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -1139,17 +1144,26 @@ const loadAIPrediction = async () => {
 }
 
 const getRankClass = (percentile) => {
-  if (percentile <= 10) return 'bg-green-100 text-green-800'
-  if (percentile <= 25) return 'bg-blue-100 text-blue-800'
-  if (percentile <= 50) return 'bg-yellow-100 text-yellow-800'
+  if (percentile >= 90) return 'bg-green-100 text-green-800'
+  if (percentile >= 75) return 'bg-blue-100 text-blue-800'
+  if (percentile >= 50) return 'bg-yellow-100 text-yellow-800'
   return 'bg-gray-100 text-gray-800'
 }
 
 const getRankLabel = (percentile) => {
-  if (percentile <= 10) return '🏆 Excellent'
-  if (percentile <= 25) return '⭐ High Potential'
-  if (percentile <= 50) return '✓ Good'
+  if (percentile >= 90) return '🏆 Excellent'
+  if (percentile >= 75) return '⭐ High Potential'
+  if (percentile >= 50) return '✓ Good'
   return '○ Average'
+}
+
+const formatRawScore = (score) => {
+  if (score >= 1000000) {
+    return (score / 1000000).toFixed(1) + 'M'
+  } else if (score >= 1000) {
+    return (score / 1000).toFixed(0) + 'K'
+  }
+  return score.toFixed(0)
 }
 
 const updateCustomer = async () => {
