@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -88,14 +90,48 @@ class MLController extends Controller
     /**
      * Get predictions for top potential customers
      * POST /api/ml/predict
+     * Role-based filtering:
+     * - Admin: Get top 7 from all customers
+     * - Sales: Get top 7 from only assigned customers
      */
     public function predict(Request $request)
     {
         try {
-            Log::info('Requesting customer predictions...');
+            $user = Auth::user();
+            
+            $payload = ['top_n' => 7];
+            
+            // ROLE-BASED FILTER
+            if ($user->role === 'sales') {
+                // Get only assigned customers
+                $customerIds = Customer::where('assigned_sales_id', $user->id)
+                    ->pluck('id')
+                    ->toArray();
+                
+                Log::info('Sales user prediction', [
+                    'user_id' => $user->id,
+                    'assigned_customers_count' => count($customerIds)
+                ]);
+                
+                // If no customers assigned, return empty result
+                if (empty($customerIds)) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => [
+                            'predictions' => [],
+                            'generated_at' => now()->toIso8601String(),
+                            'message' => 'No customers assigned to you'
+                        ]
+                    ]);
+                }
+                
+                $payload['customer_ids'] = $customerIds;
+            } else {
+                Log::info('Admin user prediction - all customers');
+            }
             
             // Call Python ML service
-            $response = Http::timeout(30)->post($this->getMLServiceUrl() . '/predict');
+            $response = Http::timeout(30)->post($this->getMLServiceUrl() . '/predict', $payload);
             
             if ($response->successful()) {
                 $data = $response->json();

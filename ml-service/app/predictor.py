@@ -168,10 +168,11 @@ class CustomerPredictor:
         
         return scores
     
-    def predict_top_customers(self, top_n: int = 7) -> List[Dict]:
+    def predict_top_customers(self, top_n: int = 7, customer_ids: List[int] = None) -> List[Dict]:
         """
         Predict top N potential customers
         If top_n is None, return all customers sorted by score
+        If customer_ids provided, filter to only those customers (for sales role)
         """
         try:
             # Load model if not in memory
@@ -182,11 +183,22 @@ class CustomerPredictor:
                 self.features_df = joblib.load(self.model_path)
                 self.metadata = self.get_model_info()
             
+            # Start with full dataset
+            df = self.features_df.copy()
+            
+            # Filter by customer_ids if provided (SALES ROLE)
+            if customer_ids is not None and len(customer_ids) > 0:
+                df = df[df['customer_id'].isin(customer_ids)]
+            
+            # Check if any customers remain after filter
+            if len(df) == 0:
+                return []
+            
             # Sort by score
             if top_n is None:
-                top_customers = self.features_df.sort_values('prediction_score', ascending=False)
+                top_customers = df.sort_values('prediction_score', ascending=False)
             else:
-                top_customers = self.features_df.nlargest(top_n, 'prediction_score')
+                top_customers = df.nlargest(min(top_n, len(df)), 'prediction_score')
             
             # Format results
             predictions = []

@@ -94,8 +94,14 @@
 
         <!-- Empty State -->
         <div v-else-if="!predicting && !training" class="text-center py-6 sm:py-8 text-gray-500">
-          <div class="text-3xl sm:text-4xl mb-2">🎯</div>
-          <p class="text-xs sm:text-sm px-4">{{ $t('dashboard.aiPrediction.emptyState') }}</p>
+          <div class="text-3xl sm:text-4xl mb-2">
+            <span v-if="predictionMessage">📋</span>
+            <span v-else>🎯</span>
+          </div>
+          <p class="text-xs sm:text-sm px-4">
+            <span v-if="predictionMessage">{{ predictionMessage }}</span>
+            <span v-else>{{ $t('dashboard.aiPrediction.emptyState') }}</span>
+          </p>
         </div>
       </div>
 
@@ -532,6 +538,7 @@ const weekMeetingsPagination = computed(() => dashboardStore.weekMeetingsPaginat
 const training = ref(false)
 const predicting = ref(false)
 const predictions = ref([])
+const predictionMessage = ref('') // For sales with no assigned customers
 const modelInfo = ref(null)
 const trainSuccess = ref('')
 const mlError = ref('')
@@ -609,12 +616,17 @@ const trainModel = async () => {
 const predict = async () => {
   predicting.value = true
   mlError.value = ''
+  predictionMessage.value = ''
   
   try {
     const response = await axios.post('/ml/predict')
     
     if (response.data.success) {
       predictions.value = response.data.data.predictions
+      // Check if there's a message (e.g., "No customers assigned")
+      if (response.data.data.message) {
+        predictionMessage.value = response.data.data.message
+      }
     } else {
       mlError.value = response.data.message || 'Gagal mendapatkan prediksi'
     }

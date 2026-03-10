@@ -67,6 +67,11 @@ class PredictResponse(BaseModel):
     model_trained_at: Optional[str] = None
 
 
+class PredictRequest(BaseModel):
+    top_n: Optional[int] = 7
+    customer_ids: Optional[List[int]] = None  # Filter by customer IDs (for sales role)
+
+
 class SingleCustomerRequest(BaseModel):
     customer_id: int
 
@@ -135,10 +140,11 @@ async def train_model():
 
 
 @app.post("/predict", response_model=PredictResponse)
-async def predict_top_customers():
+async def predict_top_customers(request: PredictRequest = None):
     """
-    Predict top 7 potential customers
+    Predict top N potential customers
     Returns customers ranked by potential score
+    Optionally filter by customer_ids (for sales role)
     """
     try:
         if not predictor.model_exists():
@@ -147,7 +153,14 @@ async def predict_top_customers():
                 detail="Model not trained yet. Please train the model first using /train endpoint"
             )
         
-        predictions = predictor.predict_top_customers(top_n=7)
+        # Use default values if no request body
+        if request is None:
+            request = PredictRequest()
+        
+        predictions = predictor.predict_top_customers(
+            top_n=request.top_n or 7,
+            customer_ids=request.customer_ids
+        )
         
         return PredictResponse(
             success=True,
