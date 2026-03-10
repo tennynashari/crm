@@ -148,6 +148,18 @@ export default {
     leadStatus: 'Lead Status',
     source: 'Source',
     notes: 'Notes',
+    // AI Prediction Section
+    aiPrediction: {
+      title: 'AI Potential Score',
+      subtitle: 'Customer potential based on ML prediction',
+      calculate: 'Calculate Score',
+      loading: 'Calculating...',
+      potentialScore: 'Potential Score',
+      rank: 'Rank',
+      top: 'Top',
+      reasons: 'Factors',
+      emptyState: 'Click "Calculate Score" to see AI prediction'
+    },
     noArea: 'No Area',
     noStatus: 'No Status',
     // Contacts Section

@@ -171,6 +171,7 @@ class CustomerPredictor:
     def predict_top_customers(self, top_n: int = 7) -> List[Dict]:
         """
         Predict top N potential customers
+        If top_n is None, return all customers sorted by score
         """
         try:
             # Load model if not in memory
@@ -182,7 +183,10 @@ class CustomerPredictor:
                 self.metadata = self.get_model_info()
             
             # Sort by score
-            top_customers = self.features_df.nlargest(top_n, 'prediction_score')
+            if top_n is None:
+                top_customers = self.features_df.sort_values('prediction_score', ascending=False)
+            else:
+                top_customers = self.features_df.nlargest(top_n, 'prediction_score')
             
             # Format results
             predictions = []
@@ -256,3 +260,33 @@ class CustomerPredictor:
             return "Customer aktif"
         
         return " • ".join(reasons[:3])  # Max 3 reasons
+    
+    def predict_single_customer(self, customer_id: int) -> dict:
+        """
+        Predict potential score for a single customer
+        Returns score, reason, and ranking information
+        """
+        try:
+            if not self.model_exists():
+                raise Exception("Model not trained yet")
+            
+            # Get all predictions to calculate ranking
+            all_predictions = self.predict_top_customers(top_n=None)  # Get all
+            
+            # Find the specific customer
+            customer_prediction = None
+            for idx, pred in enumerate(all_predictions):
+                if pred["customer_id"] == customer_id:
+                    customer_prediction = pred
+                    customer_prediction["rank"] = idx + 1
+                    # Calculate percentile (top X%)
+                    total_customers = len(all_predictions)
+                    percentile = ((idx + 1) / total_customers) * 100
+                    customer_prediction["percentile"] = round(percentile, 1)
+                    break
+            
+            return customer_prediction
+            
+        except Exception as e:
+            print(f"Single customer prediction error: {e}")
+            raise

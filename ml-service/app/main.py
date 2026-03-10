@@ -66,6 +66,22 @@ class PredictResponse(BaseModel):
     model_trained_at: Optional[str] = None
 
 
+class SingleCustomerRequest(BaseModel):
+    customer_id: int
+
+
+class SingleCustomerPredictionResponse(BaseModel):
+    success: bool
+    customer_id: int
+    score: float
+    reason: str
+    company: str
+    email: str
+    rank: Optional[int] = None  # Position among all customers (1 = highest)
+    percentile: Optional[float] = None  # Top X% of customers
+    generated_at: str
+
+
 @app.get("/", response_model=HealthResponse)
 async def root():
     """Health check endpoint"""
@@ -136,6 +152,45 @@ async def predict_top_customers():
             predictions=predictions,
             generated_at=datetime.now().isoformat(),
             model_trained_at=predictor.get_model_info().get("trained_at")
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict-single", response_model=SingleCustomerPredictionResponse)
+async def predict_single_customer(request: SingleCustomerRequest):
+    """
+    Predict potential score for a single customer
+    Returns score, reason, and ranking compared to all customers
+    """
+    try:
+        if not predictor.model_exists():
+            raise HTTPException(
+                status_code=400,
+                detail="Model not trained yet. Please train the model first using /train endpoint"
+            )
+        
+        result = predictor.predict_single_customer(request.customer_id)
+        
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Customer with ID {request.customer_id} not found"
+            )
+        
+        return SingleCustomerPredictionResponse(
+            success=True,
+            customer_id=result["customer_id"],
+            score=result["score"],
+            reason=result["reason"],
+            company=result["company"],
+            email=result["email"],
+            rank=result.get("rank"),
+            percentile=result.get("percentile"),
+            generated_at=datetime.now().isoformat()
         )
         
     except HTTPException:

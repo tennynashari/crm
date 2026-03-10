@@ -108,6 +108,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/health', [MLController::class, 'health']);
         Route::post('/train', [MLController::class, 'train']);
         Route::post('/predict', [MLController::class, 'predict']);
+        Route::post('/predict-single', [MLController::class, 'predictSingle']);
         Route::get('/model-info', [MLController::class, 'modelInfo']);
     });
 });

@@ -104,6 +104,65 @@
       </div>
     </div>
 
+    <!-- AI Prediction Score Card -->
+    <div class="card bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div class="text-2xl sm:text-3xl">🤖</div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-gray-800">{{ $t('customerDetail.aiPrediction.title') }}</h3>
+            <p class="text-xs text-gray-600 hidden sm:block">{{ $t('customerDetail.aiPrediction.subtitle') }}</p>
+          </div>
+        </div>
+        <button
+          @click="loadAIPrediction"
+          :disabled="loadingAIPrediction"
+          class="btn btn-primary btn-sm flex items-center gap-1 flex-shrink-0 text-xs sm:text-sm"
+        >
+          <span v-if="loadingAIPrediction" class="inline-block animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></span>
+          <span>{{ loadingAIPrediction ? $t('customerDetail.aiPrediction.loading') : '🎯 ' + $t('customerDetail.aiPrediction.calculate') }}</span>
+        </button>
+      </div>
+
+      <!-- AI Score Display -->
+      <div v-if="aiPrediction" class="space-y-3">
+        <div class="bg-white rounded-lg p-3 sm:p-4 border-2 border-purple-100">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex-1">
+              <div class="text-xs sm:text-sm text-gray-600 mb-1">{{ $t('customerDetail.aiPrediction.potentialScore') }}</div>
+              <div class="text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-600">
+                {{ aiPrediction.score.toFixed(1) }}
+              </div>
+              <div class="text-xs sm:text-sm text-gray-500 mt-1">
+                {{ $t('customerDetail.aiPrediction.rank') }}: #{{ aiPrediction.rank }} ({{ $t('customerDetail.aiPrediction.top') }} {{ aiPrediction.percentile }}%)
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold"
+                :class="getRankClass(aiPrediction.percentile)">
+                {{ getRankLabel(aiPrediction.percentile) }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-200">
+            <div class="text-xs sm:text-sm text-gray-600 mb-1">{{ $t('customerDetail.aiPrediction.reasons') }}</div>
+            <div class="text-sm sm:text-base text-blue-600">{{ aiPrediction.reason }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="aiPredictionError" class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs sm:text-sm text-red-700">
+        ⚠️ {{ aiPredictionError }}
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="!loadingAIPrediction" class="text-center py-6 sm:py-8 text-gray-500">
+        <div class="text-3xl sm:text-4xl mb-2">🎯</div>
+        <p class="text-xs sm:text-sm">{{ $t('customerDetail.aiPrediction.emptyState') }}</p>
+      </div>
+    </div>
+
     <!-- Contacts (PICs) Card -->
     <div class="card">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -969,6 +1028,12 @@ const invoicePagination = ref({
 const showInvoiceModal = ref(false)
 const editingInvoice = ref(null)
 const exportLoading = ref(false)
+
+// AI Prediction data
+const aiPrediction = ref(null)
+const loadingAIPrediction = ref(false)
+const aiPredictionError = ref(null)
+
 const invoiceForm = ref({
   invoice_number: '',
   invoice_date: '',
@@ -1041,6 +1106,50 @@ const sendEmail = async () => {
   } finally {
     sendingEmail.value = false
   }
+}
+
+// AI Prediction methods
+const loadAIPrediction = async () => {
+  loadingAIPrediction.value = true
+  aiPredictionError.value = null
+  aiPrediction.value = null
+  
+  try {
+    const response = await api.post('/ml/predict-single', {
+      customer_id: customer.value.id
+    })
+    
+    if (response.data.success) {
+      aiPrediction.value = response.data.data
+    } else {
+      aiPredictionError.value = response.data.message || 'Failed to get prediction'
+    }
+  } catch (error) {
+    console.error('AI Prediction error:', error)
+    if (error.response?.status === 400) {
+      aiPredictionError.value = 'Model belum di-train. Silakan train model di dashboard terlebih dahulu.'
+    } else if (error.response?.status === 404) {
+      aiPredictionError.value = 'Customer tidak ditemukan dalam model. Coba train ulang model.'
+    } else {
+      aiPredictionError.value = error.response?.data?.message || 'Gagal mendapatkan prediksi AI'
+    }
+  } finally {
+    loadingAIPrediction.value = false
+  }
+}
+
+const getRankClass = (percentile) => {
+  if (percentile <= 10) return 'bg-green-100 text-green-800'
+  if (percentile <= 25) return 'bg-blue-100 text-blue-800'
+  if (percentile <= 50) return 'bg-yellow-100 text-yellow-800'
+  return 'bg-gray-100 text-gray-800'
+}
+
+const getRankLabel = (percentile) => {
+  if (percentile <= 10) return '🏆 Excellent'
+  if (percentile <= 25) return '⭐ High Potential'
+  if (percentile <= 50) return '✓ Good'
+  return '○ Average'
 }
 
 const updateCustomer = async () => {

@@ -146,7 +146,21 @@ export default {
     area: 'Area',
     assignedSales: 'Sales yang Ditugaskan',
     leadStatus: 'Status Lead',
-    source: 'Sumber',    notes: 'Catatan',    noArea: 'Tidak ada Area',
+    source: 'Sumber',
+    notes: 'Catatan',
+    // AI Prediction Section
+    aiPrediction: {
+      title: 'Skor Potensial AI',
+      subtitle: 'Potensi customer berdasarkan prediksi ML',
+      calculate: 'Hitung Skor',
+      loading: 'Menghitung...',
+      potentialScore: 'Skor Potensial',
+      rank: 'Peringkat',
+      top: 'Top',
+      reasons: 'Faktor',
+      emptyState: 'Klik "Hitung Skor" untuk melihat prediksi AI'
+    },
+    noArea: 'Tidak ada Area',
     noStatus: 'Tidak ada Status',
     // Contacts Section
     contactsTitle: 'Kontak (PIC)',

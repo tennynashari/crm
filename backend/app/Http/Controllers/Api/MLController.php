@@ -136,6 +136,77 @@ class MLController extends Controller
     }
 
     /**
+     * Get prediction for a single customer
+     * POST /api/ml/predict-single
+     */
+    public function predictSingle(Request $request)
+    {
+        try {
+            $request->validate([
+                'customer_id' => 'required|integer|exists:customers,id'
+            ]);
+
+            Log::info('Requesting single customer prediction...', ['customer_id' => $request->customer_id]);
+            
+            // Call Python ML service
+            $response = Http::timeout(10)->post($this->getMLServiceUrl() . '/predict-single', [
+                'customer_id' => $request->customer_id
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Single prediction received', ['customer_id' => $request->customer_id]);
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => $data
+                ]);
+            }
+            
+            // If model not trained yet
+            if ($response->status() === 400) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Model belum di-train. Silakan train model terlebih dahulu.',
+                    'error' => $response->json()
+                ], 400);
+            }
+
+            // If customer not found
+            if ($response->status() === 404) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer tidak ditemukan dalam model',
+                    'error' => $response->json()
+                ], 404);
+            }
+            
+            Log::error('ML single prediction failed', ['response' => $response->body()]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendapatkan prediksi',
+                'error' => $response->json()
+            ], $response->status());
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('ML single prediction exception', ['error' => $e->getMessage()]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saat prediksi',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get model information
      * GET /api/ml/model-info
      */
