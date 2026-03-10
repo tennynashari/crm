@@ -208,6 +208,7 @@ class CustomerPredictor:
                     "customer_id": int(row['customer_id']),
                     "company": row['company'],
                     "email": row['email'],
+                    "area": row['area_name'] if pd.notna(row.get('area_name')) else 'No Area',
                     "score": float(row['prediction_score']),
                     "rank": rank,
                     "reason": reason,

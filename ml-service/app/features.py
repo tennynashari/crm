@@ -59,6 +59,7 @@ class FeatureEngineering:
                 'customer_id': customer_id,
                 'company': customer['company'],
                 'email': customer['email'],
+                'area_name': customer['area_name'] if pd.notna(customer.get('area_name')) else 'No Area',
                 **self._customer_profile_features(customer),
                 **self._interaction_features(customer_interactions),
                 **self._invoice_features(customer_invoices),

@@ -52,6 +52,7 @@ class PredictionResult(BaseModel):
     customer_id: int
     company: str
     email: str
+    area: str
     score: float
     rank: int
     reason: str
@@ -77,6 +78,7 @@ class SingleCustomerPredictionResponse(BaseModel):
     reason: str
     company: str
     email: str
+    area: str
     rank: Optional[int] = None  # Position among all customers (1 = highest)
     percentile: Optional[float] = None  # Top X% of customers
     generated_at: str
@@ -188,6 +190,7 @@ async def predict_single_customer(request: SingleCustomerRequest):
             reason=result["reason"],
             company=result["company"],
             email=result["email"],
+            area=result.get("area", "No Area"),
             rank=result.get("rank"),
             percentile=result.get("percentile"),
             generated_at=datetime.now().isoformat()

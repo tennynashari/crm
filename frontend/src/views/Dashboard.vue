@@ -75,7 +75,10 @@
                 {{ idx + 1 }}
               </div>
               <div class="flex-1 min-w-0">
-                <h4 class="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base truncate">{{ pred.company }}</h4>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h4 class="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base truncate">{{ pred.company }}</h4>
+                  <span v-if="pred.area" class="badge bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">📍 {{ pred.area }}</span>
+                </div>
                 <p class="text-xs text-gray-600 truncate">{{ pred.email }}</p>
                 <p class="text-xs text-blue-600 mt-1 line-clamp-2">{{ pred.reason }}</p>
               </div>
