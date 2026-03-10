@@ -87,7 +87,7 @@ class FeatureEngineering:
         
         # Days until next action (negative if overdue)
         if pd.notna(customer.get('next_action_date')):
-            features['days_to_next_action'] = (customer['next_action_date'] - self.reference_date.date()).days
+            features['days_to_next_action'] = (customer['next_action_date'] - self.reference_date).days
         else:
             features['days_to_next_action'] = 999
         
