@@ -82,7 +82,7 @@ class SyncUserProfiles extends Command
                 // Check if user_profile already exists
                 $exists = DB::connection('tenant')
                     ->table('user_profiles')
-                    ->where('id', $user->id)
+                    ->where('master_user_id', $user->id)  // Use master_user_id
                     ->exists();
                 
                 if ($exists) {
@@ -97,9 +97,9 @@ class SyncUserProfiles extends Command
                 $name = $user->name ?? 'Unknown';
                 $email = $user->email ?? 'unknown@example.com';
                 
-                // Insert to user_profiles with same ID
+                // Insert to user_profiles with master_user_id reference
                 DB::connection('tenant')->table('user_profiles')->insert([
-                    'id' => $user->id,
+                    'master_user_id' => $user->id,  // Link to master DB user
                     'name' => $name,
                     'email' => $email,
                     'role' => $role,

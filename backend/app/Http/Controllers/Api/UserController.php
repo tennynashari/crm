@@ -100,9 +100,9 @@ class UserController extends Controller
                 'company_id' => $companyId
             ]);
             
-            // Step 2: Insert to Tenant DB with SAME ID (no password in tenant)
+            // Step 2: Insert to Tenant DB with master_user_id reference
             DB::connection('tenant')->table('user_profiles')->insert([
-                'id' => $userId,  // Keep ID same for FK relationships
+                'master_user_id' => $userId,  // Link to master DB user
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'role' => $validated['role'],
@@ -198,7 +198,7 @@ class UserController extends Controller
             if (!empty($tenantData)) {
                 DB::connection('tenant')
                     ->table('user_profiles')
-                    ->where('id', $id)
+                    ->where('master_user_id', $id)  // Use master_user_id, not id
                     ->update($tenantData);
                 
                 Log::info('User profile synced to tenant DB', ['user_id' => $id]);
@@ -263,7 +263,7 @@ class UserController extends Controller
             // Step 1: Delete from Tenant DB first (FK constraints)
             DB::connection('tenant')
                 ->table('user_profiles')
-                ->where('id', $id)
+                ->where('master_user_id', $id)  // Use master_user_id, not id
                 ->delete();
             
             Log::info('User profile deleted from tenant DB', ['user_id' => $id]);
