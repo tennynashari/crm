@@ -18,12 +18,9 @@ class SetTenantFromSession
     
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip untuk public routes (login, register)
-        if ($request->routeIs('login', 'register')) {
-            return $next($request);
-        }
+        // This middleware is only applied to authenticated routes
+        // So we can safely assume user is authenticated here
         
-        // Check authentication
         if (!auth()->check()) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
@@ -32,8 +29,14 @@ class SetTenantFromSession
         try {
             $this->tenantService->setTenantBySession();
         } catch (\Exception $e) {
+            \Log::error('Tenant context error', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'session_data' => session()->all()
+            ]);
+            
             return response()->json([
-                'message' => 'Tenant context error',
+                'message' => 'Tenant context error. Please logout and login again.',
                 'error' => $e->getMessage()
             ], 500);
         }
