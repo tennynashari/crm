@@ -75,17 +75,23 @@ try {
                 
                 // Update foreign keys to point to this user_profile
                 $updates = [
-                    'customers' => ['user_id'],
+                    'customers' => ['assigned_sales_id'],
                     'interactions' => ['user_id'],
-                    'invoices' => ['user_id'],
+                    'invoices' => ['user_id', 'created_by'],
                 ];
                 
                 foreach ($updates as $table => $columns) {
+                    $tableExists = DB::connection('pgsql')
+                        ->select("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{$table}')")[0]->exists;
+                    
+                    if (!$tableExists) continue;
+                    
                     foreach ($columns as $column) {
-                        $tableExists = DB::connection('pgsql')
-                            ->select("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{$table}')")[0]->exists;
+                        // Check if column exists in table
+                        $columnExists = DB::connection('pgsql')
+                            ->select("SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = '{$table}' AND column_name = '{$column}')")[0]->exists;
                         
-                        if ($tableExists) {
+                        if ($columnExists) {
                             $count = DB::connection('pgsql')
                                 ->table($table)
                                 ->where($column, $oldUser->id)
@@ -119,17 +125,23 @@ try {
             
             // Update foreign keys to point to new user_profile
             $updates = [
-                'customers' => ['user_id'],
+                'customers' => ['assigned_sales_id'],
                 'interactions' => ['user_id'],
-                'invoices' => ['user_id'],
+                'invoices' => ['user_id', 'created_by'],
             ];
             
             foreach ($updates as $table => $columns) {
+                $tableExists = DB::connection('pgsql')
+                    ->select("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{$table}')")[0]->exists;
+                
+                if (!$tableExists) continue;
+                
                 foreach ($columns as $column) {
-                    $tableExists = DB::connection('pgsql')
-                        ->select("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{$table}')")[0]->exists;
+                    // Check if column exists in table
+                    $columnExists = DB::connection('pgsql')
+                        ->select("SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = '{$table}' AND column_name = '{$column}')")[0]->exists;
                     
-                    if ($tableExists) {
+                    if ($columnExists) {
                         $count = DB::connection('pgsql')
                             ->table($table)
                             ->where($column, $oldUser->id)
