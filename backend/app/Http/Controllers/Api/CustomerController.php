@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HasTenantUser;
 use App\Models\Customer;
 use App\Models\Interaction;
 use App\Models\AuditLog;
+use App\Models\Tenant\UserProfile;
 use App\Exports\CustomersExport;
 use App\Exports\CustomerDetailExport;
 use Illuminate\Http\Request;
@@ -14,9 +16,12 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
+    use HasTenantUser;
+    
     public function index(Request $request)
     {
-        $user = auth()->user();
+        // Get tenant user profile instead of master user
+        $user = $this->getCurrentUserProfile();
         
         $query = Customer::with([
             'area', 
@@ -260,7 +265,7 @@ class CustomerController extends Controller
      */
     public function export(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getCurrentUserProfile();
         
         // Get filters from request
         $filters = $request->only([
