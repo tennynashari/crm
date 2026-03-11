@@ -64,29 +64,41 @@ try {
         ->first();
     
     // Switch to tenant database
-    config(['database.connections.tenant.database' => 'crm']);
-    DB::purge('tenant');
-    DB::reconnect('tenant');
+    config(['database.connections.pgsql.database' => 'crm']);
+    DB::purge('pgsql');
+    DB::reconnect('pgsql');
     
-    // Get all user profiles from tenant database
-    $userProfiles = DB::connection('tenant')
-        ->table('user_profiles')
-        ->get();
+    // Check if user_profiles table exists, if not use users table
+    try {
+        $tableCheck = DB::connection('pgsql')
+            ->select("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_profiles')");
+        $hasUserProfiles = $tableCheck[0]->exists;
+    } catch (\Exception $e) {
+        $hasUserProfiles = false;
+    }
     
-    if ($userProfiles->isEmpty()) {
+    if ($hasUserProfiles) {
+        echo "Using user_profiles table...\n";
+        $users = DB::connection('pgsql')->table('user_profiles')->get();
+    } else {
+        echo "Using users table (existing database)...\n";
+        $users = DB::connection('pgsql')->table('users')->get();
+    }
+    
+    if ($users->isEmpty()) {
         echo "⚠️  No users found in Main Company database\n\n";
     } else {
-        echo "Found {$userProfiles->count()} users. Registering in master database...\n\n";
+        echo "Found {$users->count()} users. Registering in master database...\n\n";
         
-        foreach ($userProfiles as $profile) {
+        foreach ($users as $user) {
             // Check if user already exists in master
             $existingUser = DB::connection('master')
                 ->table('users')
-                ->where('email', $profile->email)
+                ->where('email', $user->email)
                 ->first();
             
             if ($existingUser) {
-                echo "   ℹ️  User already exists: {$profile->email}\n";
+                echo "   ℹ️  User already exists: {$user->email}\n";
                 continue;
             }
             
@@ -95,15 +107,15 @@ try {
                 ->table('users')
                 ->insertGetId([
                     'company_id' => $company->id,
-                    'name' => $profile->name,
-                    'email' => $profile->email,
+                    'name' => $user->name,
+                    'email' => $user->email,
                     'password' => bcrypt('password123'), // Default password
                     'email_verified_at' => now(),
-                    'created_at' => $profile->created_at ?? now(),
+                    'created_at' => $user->created_at ?? now(),
                     'updated_at' => now(),
                 ]);
             
-            echo "   ✅ Registered: {$profile->email} (ID: {$userId})\n";
+            echo "   ✅ Registered: {$user->email} (ID: {$userId})\n";
         }
     }
     
