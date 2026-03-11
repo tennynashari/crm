@@ -17,7 +17,7 @@ try {
     // Get Main Company from master database
     $company = DB::connection('master')
         ->table('companies')
-        ->where('database', 'crm')
+        ->where('database_name', 'crm')
         ->first();
     
     if (!$company) {
@@ -26,11 +26,11 @@ try {
     }
     
     echo "Company: {$company->name}\n";
-    echo "Database: {$company->database}\n";
+    echo "Database: {$company->database_name}\n";
     echo "------------------------------------------------------------\n\n";
     
     // Switch to tenant database
-    config(['database.connections.tenant.database' => $company->database]);
+    config(['database.connections.tenant.database' => $company->database_name]);
     DB::purge('tenant');
     DB::reconnect('tenant');
     
