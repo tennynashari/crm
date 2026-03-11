@@ -55,10 +55,10 @@ class SyncUserProfiles extends Command
     
     private function syncCompanyUsers($company)
     {
-        // Get users for this company from master DB with explicit columns
+        // Get users for this company from master DB (NO role in master)
         $users = DB::connection('master')
             ->table('users')
-            ->select('id', 'name', 'email', 'role', 'is_active', 'created_at', 'updated_at')
+            ->select('id', 'name', 'email', 'is_active', 'created_at', 'updated_at')
             ->where('company_id', $company->id)
             ->get();
         
@@ -91,8 +91,8 @@ class SyncUserProfiles extends Command
                     continue;
                 }
                 
-                // Handle missing or NULL fields with defaults
-                $role = $user->role ?? 'sales';  // Default to 'sales' if NULL
+                // Default role to 'sales' for all migrated users
+                $role = 'sales';  // Master DB doesn't have role, default to sales
                 $isActive = isset($user->is_active) ? (bool)$user->is_active : true;
                 $name = $user->name ?? 'Unknown';
                 $email = $user->email ?? 'unknown@example.com';

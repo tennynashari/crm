@@ -25,8 +25,8 @@ class UserController extends Controller
                 'auth_user' => auth()->id(),
             ]);
             
-            if (!$companyId) {
-                Log::warning('Session missing company_id', [
+            if (!$companyId || !$tenantDb) {
+                Log::warning('Session missing company_id or tenant_db', [
                     'session_data' => session()->all()
                 ]);
                 return response()->json([
@@ -34,10 +34,11 @@ class UserController extends Controller
                 ], 401);
             }
             
-            // Query from Master DB with company filter
-            $query = DB::connection('master')
-                ->table('users')
-                ->where('company_id', $companyId);
+            // Query from Tenant DB (user_profiles) - already isolated by tenant
+            // Tenant middleware ensures correct database is selected
+            $query = DB::connection('tenant')
+                ->table('user_profiles')
+                ->select('id', 'master_user_id', 'name', 'email', 'role', 'phone', 'is_active', 'created_at', 'updated_at');
 
             // Filter by role
             if ($request->has('role')) {
@@ -48,7 +49,8 @@ class UserController extends Controller
             $users = $query->orderBy('name')->get();
             
             Log::info('UserController::index success', [
-                'count' => $users->count()
+                'count' => $users->count(),
+                'tenant_db' => $tenantDb,
             ]);
 
             return response()->json($users);
@@ -58,6 +60,7 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'company_id' => session('company_id'),
+                'tenant_db' => session('tenant_db'),
             ]);
             
             return response()->json([
@@ -73,13 +76,18 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $companyId = session('company_id');
+        $tenantDb = session('tenant_db');
         
-        // Query from Master DB with company check
-        $user = DB::connection('master')
-            ->table('users')
+        if (!$tenantDb) {
+            return response()->json([
+                'message' => 'Invalid session. Please login again.'
+            ], 401);
+        }
+        
+        // Query from Tenant DB (user_profiles) - tenant isolation ensures company security
+        $user = DB::connection('tenant')
+            ->table('user_profiles')
             ->where('id', $id)
-            ->where('company_id', $companyId)
             ->first();
         
         if (!$user) {
@@ -95,7 +103,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:master.users,email',  // Check uniqueness in master DB
+            'email' => 'required|email',  // Uniqueness checked below
             'password' => 'required|string|min:8',
             'role' => ['required', Rule::in(['admin', 'sales'])],
             'is_active' => 'boolean',
@@ -115,12 +123,24 @@ class UserController extends Controller
 
         DB::beginTransaction();
         try {
-            // Step 1: Insert to Master DB
+            // Check email uniqueness in master DB
+            $existingUser = DB::connection('master')
+                ->table('users')
+                ->where('email', $validated['email'])
+                ->exists();
+            
+            if ($existingUser) {
+                return response()->json([
+                    'message' => 'The email has already been taken.',
+                    'errors' => ['email' => ['The email has already been taken.']]
+                ], 422);
+            }
+            
+            // Step 1: Insert to Master DB (no role in master)
             $userId = DB::connection('master')->table('users')->insertGetId([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => $validated['password'],
-                'role' => $validated['role'],
                 'company_id' => $companyId,
                 'is_active' => $validated['is_active'] ?? true,
                 'created_at' => now(),
@@ -133,8 +153,8 @@ class UserController extends Controller
                 'company_id' => $companyId
             ]);
             
-            // Step 2: Insert to Tenant DB with master_user_id reference
-            DB::connection('tenant')->table('user_profiles')->insert([
+            // Step 2: Insert to Tenant DB with master_user_id reference and role
+            $profileId = DB::connection('tenant')->table('user_profiles')->insertGetId([
                 'master_user_id' => $userId,  // Link to master DB user
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -146,15 +166,16 @@ class UserController extends Controller
             
             Log::info('User profile created in tenant DB', [
                 'user_id' => $userId,
+                'profile_id' => $profileId,
                 'database' => $tenantDb
             ]);
             
             DB::commit();
             
-            // Return user data from master
-            $user = DB::connection('master')
-                ->table('users')
-                ->find($userId);
+            // Return user data from tenant DB
+            $user = DB::connection('tenant')
+                ->table('user_profiles')
+                ->find($profileId);
             
             return response()->json($user, 201);
             
@@ -177,71 +198,94 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $companyId = session('company_id');
+        $tenantDb = session('tenant_db');
         
-        if (!$companyId) {
+        if (!$companyId || !$tenantDb) {
             return response()->json([
                 'message' => 'Invalid session. Please login again.'
             ], 401);
         }
         
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => ['sometimes', 'required', 'email', Rule::unique('master.users')->ignore($id)],
-            'password' => 'nullable|string|min:8',
-            'role' => ['sometimes', 'required', Rule::in(['admin', 'sales'])],
-            'is_active' => 'boolean',
-        ]);
-
-        // Only hash password if provided
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
         DB::beginTransaction();
         try {
-            // Step 1: Check user belongs to company
-            $user = DB::connection('master')
-                ->table('users')
+            // Step 1: Get user profile from tenant DB
+            // $id is user_profiles.id, not master users.id
+            $userProfile = DB::connection('tenant')
+                ->table('user_profiles')
                 ->where('id', $id)
-                ->where('company_id', $companyId)
                 ->first();
             
-            if (!$user) {
+            if (!$userProfile) {
                 return response()->json([
-                    'message' => 'User not found or access denied'
+                    'message' => 'User not found'
                 ], 404);
             }
             
-            // Step 2: Update Master DB
-            $validated['updated_at'] = now();
-            DB::connection('master')
+            // Step 2: Verify master user belongs to this company
+            $masterUser = DB::connection('master')
                 ->table('users')
-                ->where('id', $id)
-                ->update($validated);
+                ->where('id', $userProfile->master_user_id)
+                ->where('company_id', $companyId)
+                ->first();
             
-            Log::info('User updated in master DB', ['user_id' => $id]);
+            if (!$masterUser) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Access denied'
+                ], 403);
+            }
             
-            // Step 3: Sync to Tenant DB (exclude password)
-            $tenantData = array_filter($validated, function($key) {
-                return in_array($key, ['name', 'email', 'role', 'is_active', 'updated_at']);
-            }, ARRAY_FILTER_USE_KEY);
+            // Step 3: Validate input
+            $validated = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'email' => ['sometimes', 'required', 'email', Rule::unique('master.users', 'email')->ignore($userProfile->master_user_id)],
+                'password' => 'nullable|string|min:8',
+                'role' => ['sometimes', 'required', Rule::in(['admin', 'sales'])],
+                'is_active' => 'boolean',
+            ]);
+
+            // Step 4: Update Master DB (only name, email, password, is_active - NO role)
+            $masterData = [];
+            if (isset($validated['name'])) $masterData['name'] = $validated['name'];
+            if (isset($validated['email'])) $masterData['email'] = $validated['email'];
+            if (isset($validated['is_active'])) $masterData['is_active'] = $validated['is_active'];
+            
+            if (!empty($validated['password'])) {
+                $masterData['password'] = Hash::make($validated['password']);
+            }
+            
+            if (!empty($masterData)) {
+                $masterData['updated_at'] = now();
+                DB::connection('master')
+                    ->table('users')
+                    ->where('id', $userProfile->master_user_id)
+                    ->update($masterData);
+                
+                Log::info('User updated in master DB', ['master_user_id' => $userProfile->master_user_id]);
+            }
+            
+            // Step 5: Update Tenant DB (name, email, role, is_active - NO password)
+            $tenantData = [];
+            if (isset($validated['name'])) $tenantData['name'] = $validated['name'];
+            if (isset($validated['email'])) $tenantData['email'] = $validated['email'];
+            if (isset($validated['role'])) $tenantData['role'] = $validated['role'];
+            if (isset($validated['is_active'])) $tenantData['is_active'] = $validated['is_active'];
             
             if (!empty($tenantData)) {
+                $tenantData['updated_at'] = now();
                 DB::connection('tenant')
                     ->table('user_profiles')
-                    ->where('master_user_id', $id)  // Use master_user_id, not id
+                    ->where('id', $id)
                     ->update($tenantData);
                 
-                Log::info('User profile synced to tenant DB', ['user_id' => $id]);
+                Log::info('User profile updated in tenant DB', ['profile_id' => $id]);
             }
             
             DB::commit();
             
-            // Return updated user from master
-            $updatedUser = DB::connection('master')
-                ->table('users')
+            // Return updated user from tenant DB
+            $updatedUser = DB::connection('tenant')
+                ->table('user_profiles')
                 ->find($id);
             
             return response()->json($updatedUser);
@@ -264,8 +308,9 @@ class UserController extends Controller
     public function destroy($id)
     {
         $companyId = session('company_id');
+        $tenantDb = session('tenant_db');
         
-        if (!$companyId) {
+        if (!$companyId || !$tenantDb) {
             return response()->json([
                 'message' => 'Invalid session. Please login again.'
             ], 401);
@@ -273,41 +318,55 @@ class UserController extends Controller
         
         DB::beginTransaction();
         try {
-            // Check user belongs to company
-            $user = DB::connection('master')
-                ->table('users')
+            // Step 1: Get user profile from tenant DB
+            // $id is user_profiles.id, not master users.id
+            $userProfile = DB::connection('tenant')
+                ->table('user_profiles')
                 ->where('id', $id)
-                ->where('company_id', $companyId)
                 ->first();
             
-            if (!$user) {
+            if (!$userProfile) {
                 return response()->json([
-                    'message' => 'User not found or access denied'
+                    'message' => 'User not found'
                 ], 404);
             }
             
-            // Prevent deleting yourself
-            if ($user->id === auth()->id()) {
+            // Step 2: Verify master user belongs to this company
+            $masterUser = DB::connection('master')
+                ->table('users')
+                ->where('id', $userProfile->master_user_id)
+                ->where('company_id', $companyId)
+                ->first();
+            
+            if (!$masterUser) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Access denied'
+                ], 403);
+            }
+            
+            // Step 3: Prevent deleting yourself
+            if ($masterUser->id === auth()->id()) {
                 return response()->json([
                     'message' => 'You cannot delete your own account'
                 ], 403);
             }
             
-            // Step 1: Delete from Tenant DB first (FK constraints)
+            // Step 4: Delete from Tenant DB first (FK constraints)
             DB::connection('tenant')
                 ->table('user_profiles')
-                ->where('master_user_id', $id)  // Use master_user_id, not id
-                ->delete();
-            
-            Log::info('User profile deleted from tenant DB', ['user_id' => $id]);
-            
-            // Step 2: Delete from Master DB
-            DB::connection('master')
-                ->table('users')
                 ->where('id', $id)
                 ->delete();
             
-            Log::info('User deleted from master DB', ['user_id' => $id]);
+            Log::info('User profile deleted from tenant DB', ['profile_id' => $id]);
+            
+            // Step 5: Delete from Master DB
+            DB::connection('master')
+                ->table('users')
+                ->where('id', $userProfile->master_user_id)
+                ->delete();
+            
+            Log::info('User deleted from master DB', ['master_user_id' => $userProfile->master_user_id]);
             
             DB::commit();
             

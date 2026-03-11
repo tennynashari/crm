@@ -69,15 +69,18 @@ Route::get('/debug/db-connections', function() {
 
 Route::get('/debug/users', function() {
     try {
-        // Check users in master DB
+        // Check users in master DB (select all columns to see structure)
         $masterUsers = DB::connection('master')
             ->table('users')
-            ->select('id', 'email', 'company_id', 'role', 'is_active')
             ->get();
+        
+        // Get column names from first user
+        $columns = $masterUsers->isNotEmpty() ? array_keys((array)$masterUsers->first()) : [];
         
         return response()->json([
             'status' => 'OK',
             'count' => $masterUsers->count(),
+            'columns' => $columns,
             'users' => $masterUsers,
         ]);
     } catch (\Exception $e) {
