@@ -226,7 +226,6 @@ class MLController extends Controller
                 'database' => $tenantDb,
                 'company_id' => session('company_id')
             ]);
-            ]);
             
             if ($response->successful()) {
                 $data = $response->json();
