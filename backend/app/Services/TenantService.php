@@ -57,7 +57,7 @@ class TenantService
     
     protected function configureTenantConnection(string $databaseName)
     {
-        Config::set('database.connections.tenant', [
+        $tenantConfig = [
             'driver' => 'pgsql',
             'host' => env('DB_HOST', 'localhost'),
             'port' => env('DB_PORT', 5432),
@@ -69,11 +69,20 @@ class TenantService
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
-        ]);
+        ];
         
-        // Purge & reconnect
+        // Set tenant connection
+        Config::set('database.connections.tenant', $tenantConfig);
+        
+        // IMPORTANT: Set default connection to tenant database
+        // This makes all models use tenant DB without explicit ->on('tenant')
+        Config::set('database.default', 'tenant');
+        
+        // Purge & reconnect both
         DB::purge('tenant');
+        DB::purge(); // Purge default connection cache
         DB::reconnect('tenant');
+        DB::reconnect(); // Reconnect default
     }
     
     public function getCurrentTenant()
