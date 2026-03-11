@@ -39,11 +39,16 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     model_info: Optional[dict] = None
 
+class TrainRequest(BaseModel):
+    database: Optional[str] = "crm"  # Tenant database name
+    company_id: Optional[int] = None  # Optional company ID for logging
+
 class TrainResponse(BaseModel):
     model_config = {'protected_namespaces': ()}
     
     success: bool
     message: str
+    database: str
     trained_at: str
     customers_count: int
     model_path: Optional[str] = None
@@ -71,10 +76,13 @@ class PredictResponse(BaseModel):
 class PredictRequest(BaseModel):
     top_n: Optional[int] = 7
     customer_ids: Optional[List[int]] = None  # Filter by customer IDs (for sales role)
+    database: Optional[str] = "crm"  # Tenant database name
+    company_id: Optional[int] = None  # Optional company ID for logging
 
 
 class SingleCustomerRequest(BaseModel):
     customer_id: int
+    database: Optional[str] = "crm"  # Tenant database name
 
 
 class SingleCustomerPredictionResponse(BaseModel):
@@ -92,43 +100,52 @@ class SingleCustomerPredictionResponse(BaseModel):
 
 @app.get("/", response_model=HealthResponse)
 async def root():
-    """Health check endpoint"""
-    model_info = predictor.get_model_info()
+    """Health check endpoint (default database)"""
+    model_info = predictor.get_model_info("crm")
     return {
         "status": "running",
         "service": "CRM ML Service",
         "version": "1.0.0",
-        "model_loaded": predictor.model_exists(),
+        "model_loaded": predictor.model_exists("crm"),
         "model_info": model_info
     }
 
 
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
-    """Detailed health check"""
-    model_info = predictor.get_model_info()
+async def health_check(database: str = "crm"):
+    """Detailed health check for specific tenant"""
+    model_info = predictor.get_model_info(database)
     return {
-        "status": "healthy" if predictor.model_exists() else "no_model",
+        "status": "healthy" if predictor.model_exists(database) else "no_model",
         "service": "CRM ML Service",
         "version": "1.0.0",
-        "model_loaded": predictor.model_exists(),
+        "model_loaded": predictor.model_exists(database),
         "model_info": model_info
     }
 
 
 @app.post("/train", response_model=TrainResponse)
-async def train_model():
+async def train_model(request: TrainRequest = None):
     """
-    Train the ML model with current customer data
-    Fetches data from database, engineers features, trains model
+    Train the ML model with current customer data for specific tenant
+    Fetches data from tenant database, engineers features, trains model
+    
+    Args:
+        request: Training request with database and company_id
     """
     try:
-        result = predictor.train()
+        # Default to crm database if not provided
+        database = request.database if request else "crm"
+        
+        print(f"Training request for database: {database}")
+        
+        result = predictor.train(database=database)
         
         if result["success"]:
             return TrainResponse(
                 success=True,
-                message="Model trained successfully",
+                message=f"Model trained successfully for {database}",
+                database=result["database"],
                 trained_at=result["trained_at"],
                 customers_count=result["customers_count"],
                 model_path=result.get("model_path")
@@ -137,42 +154,52 @@ async def train_model():
             raise HTTPException(status_code=500, detail=result.get("error", "Training failed"))
             
     except Exception as e:
+        print(f"Training error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/predict", response_model=PredictResponse)
 async def predict_top_customers(request: PredictRequest = None):
     """
-    Predict top N potential customers
+    Predict top N potential customers for specific tenant
     Returns customers ranked by potential score
     Optionally filter by customer_ids (for sales role)
+    
+    Args:
+        request: Prediction request with database, top_n, and customer_ids filter
     """
     try:
-        if not predictor.model_exists():
-            raise HTTPException(
-                status_code=400,
-                detail="Model not trained yet. Please train the model first using /train endpoint"
-            )
-        
         # Use default values if no request body
         if request is None:
             request = PredictRequest()
         
+        database = request.database or "crm"
+        
+        if not predictor.model_exists(database):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Model not trained yet for database: {database}. Please train the model first using /train endpoint"
+            )
+        
+        print(f"Prediction request for database: {database}, top_n: {request.top_n}")
+        
         predictions = predictor.predict_top_customers(
             top_n=request.top_n or 7,
-            customer_ids=request.customer_ids
+            customer_ids=request.customer_ids,
+            database=database
         )
         
         return PredictResponse(
             success=True,
             predictions=predictions,
             generated_at=datetime.now().isoformat(),
-            model_trained_at=predictor.get_model_info().get("trained_at")
+            model_trained_at=predictor.get_model_info(database).get("trained_at")
         )
         
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Prediction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -183,18 +210,23 @@ async def predict_single_customer(request: SingleCustomerRequest):
     Returns score, reason, and ranking compared to all customers
     """
     try:
-        if not predictor.model_exists():
+        # Extract database parameter
+        database = request.database if request.database else "crm"
+        
+        # Check if model exists for this tenant
+        if not predictor.model_exists(database=database):
             raise HTTPException(
                 status_code=400,
-                detail="Model not trained yet. Please train the model first using /train endpoint"
+                detail=f"Model not trained yet for database: {database}. Please train the model first using /train endpoint"
             )
         
-        result = predictor.predict_single_customer(request.customer_id)
+        # Predict for single customer in tenant database
+        result = predictor.predict_single_customer(request.customer_id, database=database)
         
         if not result:
             raise HTTPException(
                 status_code=404,
-                detail=f"Customer with ID {request.customer_id} not found"
+                detail=f"Customer with ID {request.customer_id} not found in database: {database}"
             )
         
         return SingleCustomerPredictionResponse(

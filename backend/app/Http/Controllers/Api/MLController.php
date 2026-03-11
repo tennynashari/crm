@@ -18,6 +18,22 @@ class MLController extends Controller
     {
         return env('ML_SERVICE_URL', 'http://127.0.0.1:5000');
     }
+    
+    /**
+     * Get current tenant database name from session
+     */
+    private function getTenantDatabase()
+    {
+        $tenantDb = session('tenant_db', config('database.connections.pgsql.database'));
+        
+        Log::info('Using tenant database for ML', [
+            'tenant_db' => $tenantDb,
+            'company_id' => session('company_id'),
+            'user_email' => auth()->user()->email ?? 'unknown'
+        ]);
+        
+        return $tenantDb;
+    }
 
     /**
      * Check ML service health
@@ -52,19 +68,25 @@ class MLController extends Controller
     public function train(Request $request)
     {
         try {
-            Log::info('Starting ML model training...');
+            $tenantDb = $this->getTenantDatabase();
             
-            // Call Python ML service
-            $response = Http::timeout(120)->post($this->getMLServiceUrl() . '/train');
+            Log::info('Starting ML model training...', ['database' => $tenantDb]);
+            
+            // Call Python ML service with tenant database parameter
+            $response = Http::timeout(120)->post($this->getMLServiceUrl() . '/train', [
+                'database' => $tenantDb,
+                'company_id' => session('company_id')
+            ]);
             
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('ML model trained successfully', $data);
+                Log::info('ML model trained successfully', array_merge($data, ['database' => $tenantDb]));
                 
                 return response()->json([
                     'success' => true,
                     'message' => 'Model berhasil di-train',
-                    'data' => $data
+                    'data' => $data,
+                    'database' => $tenantDb
                 ]);
             }
             
@@ -98,8 +120,13 @@ class MLController extends Controller
     {
         try {
             $user = Auth::user();
+            $tenantDb = $this->getTenantDatabase();
             
-            $payload = ['top_n' => 7];
+            $payload = [
+                'top_n' => 7,
+                'database' => $tenantDb,
+                'company_id' => session('company_id')
+            ];
             
             // ROLE-BASED FILTER
             if ($user->role === 'sales') {
@@ -110,7 +137,8 @@ class MLController extends Controller
                 
                 Log::info('Sales user prediction', [
                     'user_id' => $user->id,
-                    'assigned_customers_count' => count($customerIds)
+                    'assigned_customers_count' => count($customerIds),
+                    'database' => $tenantDb
                 ]);
                 
                 // If no customers assigned, return empty result
@@ -127,7 +155,7 @@ class MLController extends Controller
                 
                 $payload['customer_ids'] = $customerIds;
             } else {
-                Log::info('Admin user prediction - all customers');
+                Log::info('Admin user prediction - all customers', ['database' => $tenantDb]);
             }
             
             // Call Python ML service
@@ -135,7 +163,10 @@ class MLController extends Controller
             
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Predictions received', ['count' => count($data['predictions'] ?? [])]);
+                Log::info('Predictions received', [
+                    'count' => count($data['predictions'] ?? []),
+                    'database' => $tenantDb
+                ]);
                 
                 return response()->json([
                     'success' => true,
@@ -182,11 +213,19 @@ class MLController extends Controller
                 'customer_id' => 'required|integer|exists:customers,id'
             ]);
 
-            Log::info('Requesting single customer prediction...', ['customer_id' => $request->customer_id]);
+            $tenantDb = $this->getTenantDatabase();
+
+            Log::info('Requesting single customer prediction...', [
+                'customer_id' => $request->customer_id,
+                'database' => $tenantDb
+            ]);
             
             // Call Python ML service
             $response = Http::timeout(10)->post($this->getMLServiceUrl() . '/predict-single', [
-                'customer_id' => $request->customer_id
+                'customer_id' => $request->customer_id,
+                'database' => $tenantDb,
+                'company_id' => session('company_id')
+            ]);
             ]);
             
             if ($response->successful()) {

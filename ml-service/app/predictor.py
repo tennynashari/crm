@@ -17,50 +17,77 @@ from .features import FeatureEngineering
 class CustomerPredictor:
     """
     Predicts top potential customers based on interaction and sales history
+    Multi-tenant: Each tenant has separate model
     """
     
     def __init__(self):
-        self.model_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
-        self.model_path = os.path.join(self.model_dir, 'customer_predictor.pkl')
-        self.metadata_path = os.path.join(self.model_dir, 'model_metadata.json')
+        self.base_model_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
         
-        # Ensure model directory exists
-        os.makedirs(self.model_dir, exist_ok=True)
+        # Ensure base model directory exists
+        os.makedirs(self.base_model_dir, exist_ok=True)
         
         self.features_df = None
         self.metadata = None
     
-    def model_exists(self) -> bool:
-        """Check if trained model exists"""
-        return os.path.exists(self.model_path) and os.path.exists(self.metadata_path)
+    def _get_tenant_model_dir(self, database: str = "crm") -> str:
+        """Get model directory for specific tenant"""
+        tenant_dir = os.path.join(self.base_model_dir, database)
+        os.makedirs(tenant_dir, exist_ok=True)
+        return tenant_dir
     
-    def get_model_info(self) -> Optional[Dict]:
-        """Get model metadata"""
-        if not os.path.exists(self.metadata_path):
+    def _get_model_path(self, database: str = "crm") -> str:
+        """Get model file path for specific tenant"""
+        tenant_dir = self._get_tenant_model_dir(database)
+        return os.path.join(tenant_dir, 'customer_predictor.pkl')
+    
+    def _get_metadata_path(self, database: str = "crm") -> str:
+        """Get metadata file path for specific tenant"""
+        tenant_dir = self._get_tenant_model_dir(database)
+        return os.path.join(tenant_dir, 'model_metadata.json')
+    
+    def model_exists(self, database: str = "crm") -> bool:
+        """Check if trained model exists for tenant"""
+        model_path = self._get_model_path(database)
+        metadata_path = self._get_metadata_path(database)
+        return os.path.exists(model_path) and os.path.exists(metadata_path)
+    
+    def get_model_info(self, database: str = "crm") -> Optional[Dict]:
+        """Get model metadata for tenant"""
+        metadata_path = self._get_metadata_path(database)
+        
+        if not os.path.exists(metadata_path):
             return None
         
         try:
-            with open(self.metadata_path, 'r') as f:
-                return json.load(f)
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+                metadata['database'] = database  # Add tenant info
+                return metadata
         except:
             return None
     
-    def train(self) -> Dict:
+    def train(self, database: str = "crm") -> Dict:
         """
-        Train the prediction model
+        Train the prediction model for specific tenant
         For MVP: Uses rule-based scoring
         Future: Can be extended to ML model (Random Forest, etc.)
+        
+        Args:
+            database: Tenant database name (e.g., 'crm', 'crm_ecogreen')
+        
+        Returns:
+            Dict with training results
         """
         try:
-            print("Fetching data from database...")
-            customers_df = fetch_customers_data()
-            interactions_df = fetch_interactions_data()
-            invoices_df = fetch_invoices_data()
+            print(f"Fetching data from database: {database}...")
+            customers_df = fetch_customers_data(database)
+            interactions_df = fetch_interactions_data(database)
+            invoices_df = fetch_invoices_data(database)
             
             if len(customers_df) == 0:
                 return {
                     "success": False,
-                    "error": "No customers found in database"
+                    "error": f"No customers found in database: {database}"
                 }
             
             print(f"Found {len(customers_df)} customers, {len(interactions_df)} interactions, {len(invoices_df)} invoices")
@@ -74,29 +101,36 @@ class CustomerPredictor:
             print("Calculating prediction scores...")
             self.features_df['prediction_score'] = self._calculate_score(self.features_df)
             
-            # Save model (features + metadata)
-            print("Saving model...")
-            joblib.dump(self.features_df, self.model_path)
+            # Save model (features + metadata) for this tenant
+            print(f"Saving model for tenant: {database}...")
+            model_path = self._get_model_path(database)
+            metadata_path = self._get_metadata_path(database)
+            
+            joblib.dump(self.features_df, model_path)
             
             # Save metadata
             metadata = {
                 "trained_at": datetime.now().isoformat(),
+                "database": database,
                 "customers_count": len(customers_df),
                 "features_count": len(self.features_df.columns),
                 "model_type": "rule_based_scoring",
                 "version": "1.0.0"
             }
             
-            with open(self.metadata_path, 'w') as f:
+            with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=2)
             
             self.metadata = metadata
             
+            print(f"Model training complete for {database}")
+            
             return {
                 "success": True,
+                "database": database,
                 "trained_at": metadata["trained_at"],
                 "customers_count": metadata["customers_count"],
-                "model_path": self.model_path
+                "model_path": model_path
             }
             
         except Exception as e:
@@ -168,20 +202,30 @@ class CustomerPredictor:
         
         return scores
     
-    def predict_top_customers(self, top_n: int = 7, customer_ids: List[int] = None) -> List[Dict]:
+    def predict_top_customers(self, top_n: int = 7, customer_ids: List[int] = None, database: str = "crm") -> List[Dict]:
         """
-        Predict top N potential customers
+        Predict top N potential customers for specific tenant
         If top_n is None, return all customers sorted by score
         If customer_ids provided, filter to only those customers (for sales role)
+        
+        Args:
+            top_n: Number of top customers to return
+            customer_ids: Optional list to filter (for sales role)
+            database: Tenant database name
+        
+        Returns:
+            List of customer predictions
         """
         try:
-            # Load model if not in memory
-            if self.features_df is None:
-                if not self.model_exists():
-                    raise ValueError("Model not trained yet")
-                
-                self.features_df = joblib.load(self.model_path)
-                self.metadata = self.get_model_info()
+            # Load model for this tenant
+            if not self.model_exists(database):
+                raise ValueError(f"Model not trained yet for database: {database}")
+            
+            model_path = self._get_model_path(database)
+            self.features_df = joblib.load(model_path)
+            self.metadata = self.get_model_info(database)
+            
+            print(f"Loaded model for {database}: {len(self.features_df)} customers")
             
             # Start with full dataset
             df = self.features_df.copy()
@@ -283,17 +327,21 @@ class CustomerPredictor:
         
         return " • ".join(reasons[:3])  # Max 3 reasons
     
-    def predict_single_customer(self, customer_id: int) -> dict:
+    def predict_single_customer(self, customer_id: int, database: str = "crm") -> dict:
         """
         Predict potential score for a single customer
         Returns score, reason, and ranking information
+        
+        Args:
+            customer_id: ID of customer to predict
+            database: Tenant database name
         """
         try:
-            if not self.model_exists():
-                raise Exception("Model not trained yet")
+            if not self.model_exists(database=database):
+                raise Exception(f"Model not trained yet for database: {database}")
             
             # Get all predictions to calculate ranking
-            all_predictions = self.predict_top_customers(top_n=None)  # Get all (includes percentile_score)
+            all_predictions = self.predict_top_customers(database=database, top_n=None)  # Get all (includes percentile_score)
             
             # Find the specific customer
             customer_prediction = None

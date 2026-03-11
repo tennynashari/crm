@@ -1,5 +1,5 @@
 """
-Database Connection and Query Functions
+Database Connection and Query Functions with Multi-Tenant Support
 """
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
@@ -14,20 +14,50 @@ load_dotenv()
 # Database configuration
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "crm_db")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_NAME = os.getenv("DB_NAME", "crm")  # Default database
+DB_USER = os.getenv("DB_USER", "crm")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "crm123")
 
-# Create database URL
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# Cache for database engines (per tenant)
+_engines = {}
 
-# Create engine
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    echo=False
-)
+
+def get_engine(database: str = None):
+    """
+    Get or create database engine for specified database
+    
+    Args:
+        database: Database name (e.g., 'crm', 'crm_ecogreen')
+                 If None, uses default from env
+    
+    Returns:
+        SQLAlchemy engine
+    """
+    if database is None:
+        database = DB_NAME
+    
+    # Return cached engine if exists
+    if database in _engines:
+        return _engines[database]
+    
+    # Create new engine
+    database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{database}"
+    
+    engine = create_engine(
+        database_url,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+        echo=False
+    )
+    
+    # Cache it
+    _engines[database] = engine
+    
+    return engine
+
+
+# Default engine (for backward compatibility)
+engine = get_engine()
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -42,9 +72,15 @@ def get_db_session() -> Session:
         db.close()
 
 
-def fetch_customers_data() -> pd.DataFrame:
+def fetch_customers_data(database: str = None) -> pd.DataFrame:
     """
     Fetch all customers with their basic info
+    
+    Args:
+        database: Database name for multi-tenant support
+    
+    Returns:
+        DataFrame with customers data
     """
     query = """
     SELECT 
@@ -67,15 +103,22 @@ def fetch_customers_data() -> pd.DataFrame:
     ORDER BY c.id
     """
     
-    with engine.connect() as conn:
+    eng = get_engine(database)
+    with eng.connect() as conn:
         df = pd.read_sql(query, conn)
     
     return df
 
 
-def fetch_interactions_data() -> pd.DataFrame:
+def fetch_interactions_data(database: str = None) -> pd.DataFrame:
     """
     Fetch all interactions
+    
+    Args:
+        database: Database name for multi-tenant support
+    
+    Returns:
+        DataFrame with interactions data
     """
     query = """
     SELECT 
@@ -89,15 +132,22 @@ def fetch_interactions_data() -> pd.DataFrame:
     ORDER BY customer_id, interaction_at DESC
     """
     
-    with engine.connect() as conn:
+    eng = get_engine(database)
+    with eng.connect() as conn:
         df = pd.read_sql(query, conn)
     
     return df
 
 
-def fetch_invoices_data() -> pd.DataFrame:
+def fetch_invoices_data(database: str = None) -> pd.DataFrame:
     """
     Fetch all invoices
+    
+    Args:
+        database: Database name for multi-tenant support
+    
+    Returns:
+        DataFrame with invoices data
     """
     query = """
     SELECT 
@@ -113,20 +163,28 @@ def fetch_invoices_data() -> pd.DataFrame:
     ORDER BY customer_id, invoice_date DESC
     """
     
-    with engine.connect() as conn:
+    eng = get_engine(database)
+    with eng.connect() as conn:
         df = pd.read_sql(query, conn)
     
     return df
 
 
-def test_connection() -> bool:
+def test_connection(database: str = None) -> bool:
     """
     Test database connection
+    
+    Args:
+        database: Database name to test
+    
+    Returns:
+        True if connection successful
     """
     try:
-        with engine.connect() as conn:
+        eng = get_engine(database)
+        with eng.connect() as conn:
             result = conn.execute(text("SELECT 1"))
             return True
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"Database connection error (db={database}): {e}")
         return False
