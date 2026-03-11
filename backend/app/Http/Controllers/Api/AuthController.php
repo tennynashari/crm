@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Master\User;
+use App\Models\Tenant\UserProfile;
+use App\Services\TenantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +13,13 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    protected $tenantService;
+    
+    public function __construct(TenantService $tenantService)
+    {
+        $this->tenantService = $tenantService;
+    }
+    
     public function login(Request $request)
     {
         $request->validate([
@@ -18,7 +27,11 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        // Step 1: Query master database untuk authentication
+        $user = User::on('master')
+            ->where('email', $request->email)
+            ->with('company')
+            ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -26,19 +39,66 @@ class AuthController extends Controller
             ]);
         }
 
-        if (!$user->is_active) {
+        // Step 2: Check active status
+        if (!$user->is_active || !$user->company->is_active) {
             throw ValidationException::withMessages([
                 'email' => ['Your account has been deactivated.'],
             ]);
         }
 
-        Auth::login($user, $request->boolean('remember'));
+        // Step 3: Setup tenant database connection
+        try {
+            $this->tenantService->setTenantByCompany($user->company);
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages([
+                'email' => ['Company database connection failed. Please contact support.'],
+            ]);
+        }
 
+        // Step 4: Get user profile dari tenant database
+        $userProfile = UserProfile::on('tenant')
+            ->where('master_user_id', $user->id)
+            ->first();
+
+        if (!$userProfile) {
+            // Auto-create jika belum ada (first time login)
+            $userProfile = UserProfile::on('tenant')->create([
+                'master_user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => 'sales',
+                'is_active' => true,
+            ]);
+        }
+
+        // Step 5: Login & create session
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
+        // Step 6: Store tenant context in session
+        session([
+            'company_id' => $user->company_id,
+            'tenant_db' => $user->company->database_name,
+            'tenant_user_profile_id' => $userProfile->id,
+        ]);
+
+        // Step 7: Update last login
+        $user->update(['last_login_at' => now()]);
+
+        // Step 8: Return response
         return response()->json([
-            'user' => $user,
-            'message' => 'Logged in successfully',
+            'message' => 'Login successful',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $userProfile->role,
+                'company' => [
+                    'id' => $user->company->id,
+                    'name' => $user->company->name,
+                    'database' => $user->company->database_name,
+                ],
+            ],
             'session_id' => session()->getId(),
         ]);
     }
