@@ -204,19 +204,85 @@ sudo chmod -R 775 /var/www/crm/backend/bootstrap/cache
 
 ---
 
-## STEP 8: Run Migrations
+## STEP 8: Fix Permissions & Test Database Connection
 
 ```bash
 cd /var/www/crm/backend
 
+# IMPORTANT: Fix storage permissions first
+sudo chown -R www-data:www-data storage/
+sudo chown -R www-data:www-data bootstrap/cache/
+sudo chmod -R 775 storage/
+sudo chmod -R 775 bootstrap/cache/
+
 # Clear config cache
 php artisan config:clear
 
-# Migrate master database
+# Test database connection BEFORE migration
+sudo -u postgres psql -U crm -d crm_master -c "SELECT 1;"
+# If this fails, check Step 8.1 below
+
+# If connection OK, run migrations
 php artisan migrate --database=master --path=database/migrations/master --force
 
-# Check master database
+# Check master database tables
 php artisan tinker --execute="echo 'Master tables: '; DB::connection('master')->select('SELECT tablename FROM pg_tables WHERE schemaname = \'public\'');"
+```
+
+### STEP 8.1: Fix Database Authentication (If Connection Failed)
+
+Error: `password authentication failed for user "crm"`
+
+**Solution:**
+
+```bash
+# Method 1: Update PostgreSQL password for user crm
+sudo -u postgres psql
+
+# In psql console:
+ALTER USER crm WITH PASSWORD 'crm123';
+\q
+
+# Method 2: Configure PostgreSQL to trust local connections (Development Only)
+sudo nano /etc/postgresql/14/main/pg_hba.conf
+
+# Find lines like:
+# local   all             all                                     peer
+# Change to:
+local   all             all                                     md5
+
+# OR for local development:
+local   all             all                                     trust
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+
+# Test connection again
+psql -U crm -d crm_master -h localhost -c "SELECT 1;"
+# Enter password: crm123
+```
+
+### STEP 8.2: Verify .env Configuration
+
+```bash
+cd /var/www/crm/backend
+cat .env | grep DB_
+
+# Should output:
+# DB_CONNECTION=master
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_DATABASE=crm
+# DB_MASTER_DATABASE=crm_master
+# DB_USERNAME=crm
+# DB_PASSWORD=crm123
+
+# If password is wrong, edit:
+nano .env
+# Update DB_PASSWORD=crm123
+
+# Clear cache after editing
+php artisan config:clear
 ```
 
 ---
@@ -632,6 +698,222 @@ Your multi-tenant CRM system is now live at:
 ---
 
 ## 📞 Troubleshooting
+
+### 1. Permission Denied Error:
+```
+Error: The stream or file "storage/logs/laravel.log" could not be opened
+```
+
+**Solution:**
+```bash
+cd /var/www/crm/backend
+
+# Fix ownership
+sudo chown -R www-data:www-data storage/
+sudo chown -R www-data:www-data bootstrap/cache/
+
+# Fix permissions
+sudo chmod -R 775 storage/
+sudo chmod -R 775 bootstrap/cache/
+
+# Create logs directory if not exists
+mkdir -p storage/logs
+sudo chown -R www-data:www-data storage/logs
+sudo chmod -R 775 storage/logs
+
+# Verify permissions
+ls -la storage/
+# Should show: drwxrwxr-x www-data www-data
+```
+
+### 2. Database Connection Error:
+```
+Error: password authentication failed for user "crm"
+Error: connection to server at "localhost" (::1), port 5432 failed
+```
+
+**Solution A - Fix PostgreSQL Authentication:**
+```bash
+# Login sebagai postgres
+sudo -u postgres psql
+
+# Reset password untuk user crm
+ALTER USER crm WITH PASSWORD 'crm123';
+
+# Check user permissions
+\du
+
+# Exit
+\q
+
+# Test connection
+psql -U crm -d crm_master -h localhost
+# Enter password: crm123
+# Type: \q to exit
+```
+
+**Solution B - Configure pg_hba.conf:**
+```bash
+# Edit PostgreSQL authentication config
+sudo nano /etc/postgresql/14/main/pg_hba.conf
+
+# Find these lines:
+# local   all             all                                     peer
+# host    all             all             127.0.0.1/32            scram-sha-256
+
+# Change to (for password authentication):
+local   all             all                                     md5
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+
+# Save and exit (Ctrl+X, Y, Enter)
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+
+# Test connection again
+psql -U crm -d crm_master -h localhost -W
+# Enter password: crm123
+```
+
+**Solution C - Check .env Configuration:**
+```bash
+cd /var/www/crm/backend
+
+# Check current config
+cat .env | grep DB_
+
+# If wrong, edit
+nano .env
+
+# Make sure these are correct:
+DB_CONNECTION=master
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=crm
+DB_MASTER_DATABASE=crm_master
+DB_USERNAME=crm
+DB_PASSWORD=crm123
+
+# Clear Laravel cache
+php artisan config:clear
+php artisan cache:clear
+```
+
+### 3. Database Does Not Exist:
+```
+Error: database "crm_master" does not exist
+```
+
+**Solution:**
+```bash
+# Create missing database
+sudo -u postgres psql
+
+CREATE DATABASE crm_master OWNER crm;
+GRANT ALL PRIVILEGES ON DATABASE crm_master TO crm;
+\q
+
+# Verify it exists
+sudo -u postgres psql -l | grep crm
+```
+
+### 4. Migration Table Error:
+```
+Error: Base table or view not found: migrations
+```
+
+**Solution:**
+```bash
+# Fresh migration (WARNING: Will reset database)
+php artisan migrate:fresh --database=master --path=database/migrations/master --force
+
+# Or manually create migrations table
+sudo -u postgres psql -d crm_master
+
+CREATE TABLE migrations (
+    id SERIAL PRIMARY KEY,
+    migration VARCHAR(255) NOT NULL,
+    batch INTEGER NOT NULL
+);
+\q
+```
+
+### 5. PostgreSQL Not Running:
+```bash
+# Check status
+sudo systemctl status postgresql
+
+# If not running, start it
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Check port
+sudo netstat -plnt | grep 5432
+```
+
+### 6. Connection via IPv6 Issue:
+```
+Error: connection to server at "localhost" (::1)
+```
+
+**Solution:** Force IPv4 connection
+```bash
+# Edit .env
+nano .env
+
+# Change:
+DB_HOST=127.0.0.1    # Instead of localhost
+
+# OR disable IPv6 in PostgreSQL
+sudo nano /etc/postgresql/14/main/postgresql.conf
+
+# Find:
+listen_addresses = '*'
+# Change to:
+listen_addresses = '127.0.0.1'
+
+# Restart
+sudo systemctl restart postgresql
+```
+
+### 7. Check All Database Connections:
+```bash
+# Test all three databases
+psql -U crm -d crm_master -h 127.0.0.1 -c "SELECT 1;"
+psql -U crm -d crm -h 127.0.0.1 -c "SELECT 1;"
+psql -U crm -d crm_ecogreen -h 127.0.0.1 -c "SELECT 1;"
+
+# All should return: 1
+```
+
+### 8. Complete Fresh Setup (If All Else Fails):
+```bash
+# Drop and recreate everything
+sudo -u postgres psql
+
+DROP DATABASE IF EXISTS crm_master;
+DROP DATABASE IF EXISTS crm;
+DROP DATABASE IF EXISTS crm_ecogreen;
+DROP USER IF EXISTS crm;
+
+CREATE USER crm WITH PASSWORD 'crm123';
+ALTER USER crm CREATEDB;
+
+CREATE DATABASE crm_master OWNER crm;
+CREATE DATABASE crm OWNER crm;
+CREATE DATABASE crm_ecogreen OWNER crm;
+
+GRANT ALL PRIVILEGES ON DATABASE crm_master TO crm;
+GRANT ALL PRIVILEGES ON DATABASE crm TO crm;
+GRANT ALL PRIVILEGES ON DATABASE crm_ecogreen TO crm;
+
+\q
+
+# Then rerun migrations
+cd /var/www/crm/backend
+php artisan migrate --database=master --path=database/migrations/master --force
+```
 
 ### Database Connection Error:
 ```bash
