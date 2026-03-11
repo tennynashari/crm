@@ -119,14 +119,27 @@ class AuthController extends Controller
     {
         $masterUser = auth()->user();
         
+        // For debugging: also query tenant user profile
+        $tenantUserProfile = null;
+        try {
+            $userProfileId = session('tenant_user_profile_id');
+            if ($userProfileId) {
+                $tenantUserProfile = \App\Models\Tenant\UserProfile::find($userProfileId);
+            }
+        } catch (\Exception $e) {
+            // Ignore if tenant DB not set yet
+        }
+        
         return response()->json([
             'user' => $masterUser,
+            'tenant_user_profile' => $tenantUserProfile,
             'tenant_context' => [
                 'company_id' => session('company_id'),
                 'tenant_db' => session('tenant_db'),
                 'tenant_user_profile_id' => session('tenant_user_profile_id'),
+                'session_id' => session()->getId(),
                 'current_default_db' => config('database.default'),
-                'current_tenant_db' => config('database.connections.tenant.database'),
+                'current_tenant_db_config' => config('database.connections.tenant.database'),
             ],
         ]);
     }
