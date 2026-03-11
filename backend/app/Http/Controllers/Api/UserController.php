@@ -14,28 +14,61 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $companyId = session('company_id');
-        
-        if (!$companyId) {
+        try {
+            $companyId = session('company_id');
+            $tenantDb = session('tenant_db');
+            
+            Log::info('UserController::index called', [
+                'company_id' => $companyId,
+                'tenant_db' => $tenantDb,
+                'role_filter' => $request->role,
+                'auth_user' => auth()->id(),
+            ]);
+            
+            if (!$companyId) {
+                Log::warning('Session missing company_id', [
+                    'session_data' => session()->all()
+                ]);
+                return response()->json([
+                    'message' => 'Invalid session. Please login again.'
+                ], 401);
+            }
+            
+            // Query from Master DB with company filter
+            $query = DB::connection('master')
+                ->table('users')
+                ->where('company_id', $companyId);
+
+            // Filter by role
+            if ($request->has('role')) {
+                $query->where('role', $request->role);
+            }
+
+            // Show all users (active and inactive) for management
+            $users = $query->orderBy('name')->get();
+            
+            Log::info('UserController::index success', [
+                'count' => $users->count()
+            ]);
+
+            return response()->json($users);
+            
+        } catch (\Exception $e) {
+            Log::error('UserController::index failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'company_id' => session('company_id'),
+            ]);
+            
             return response()->json([
-                'message' => 'Invalid session. Please login again.'
-            ], 401);
+                'message' => 'Failed to fetch users',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'company_id' => session('company_id'),
+                    'tenant_db' => session('tenant_db'),
+                ]
+            ], 500);
         }
-        
-        // Query from Master DB with company filter
-        $query = DB::connection('master')
-            ->table('users')
-            ->where('company_id', $companyId);
-
-        // Filter by role
-        if ($request->has('role')) {
-            $query->where('role', $request->role);
-        }
-
-        // Show all users (active and inactive) for management
-        $users = $query->orderBy('name')->get();
-
-        return response()->json($users);
     }
 
     public function show($id)
