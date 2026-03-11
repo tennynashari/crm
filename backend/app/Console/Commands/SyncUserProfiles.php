@@ -88,15 +88,19 @@ class SyncUserProfiles extends Command
                 continue;
             }
             
+            // Handle missing or NULL fields with defaults
+            $role = $user->role ?? 'sales';  // Default to 'sales' if NULL
+            $isActive = $user->is_active ?? true;  // Default to true if NULL
+            
             // Insert to user_profiles with same ID
             DB::connection('tenant')->table('user_profiles')->insert([
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role,
-                'is_active' => $user->is_active,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
+                'role' => $role,
+                'is_active' => $isActive,
+                'created_at' => $user->created_at ?? now(),
+                'updated_at' => $user->updated_at ?? now(),
             ]);
             
             $this->line("    ✓ Synced user: {$user->email}");
