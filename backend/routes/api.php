@@ -48,6 +48,11 @@ Route::get('/csrf-cookie', function () {
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+// Debug routes (REMOVE IN PRODUCTION)
+if (config('app.debug')) {
+    require __DIR__.'/debug.php';
+}
+
 // Protected routes
 Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // Auth
