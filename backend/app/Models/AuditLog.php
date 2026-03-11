@@ -28,7 +28,7 @@ class AuditLog extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\Tenant\UserProfile::class, 'user_id');
     }
 
     public function customer()

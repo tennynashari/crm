@@ -35,7 +35,7 @@ class Interaction extends Model
 
     public function createdByUser()
     {
-        return $this->belongsTo(User::class, 'created_by_user_id');
+        return $this->belongsTo(\App\Models\Tenant\UserProfile::class, 'created_by_user_id');
     }
 
     public function leadStatusSnapshot()

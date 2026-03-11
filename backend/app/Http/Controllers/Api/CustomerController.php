@@ -121,7 +121,7 @@ class CustomerController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:255',
             'source' => 'required|in:inbound,outbound',
-            'assigned_sales_id' => 'nullable|exists:users,id',
+            'assigned_sales_id' => 'nullable|exists:user_profiles,id',
             'lead_status_id' => 'nullable|exists:lead_statuses,id',
             'notes' => 'nullable|string',
         ]);
@@ -130,7 +130,7 @@ class CustomerController extends Controller
 
         // Log creation
         AuditLog::create([
-            'user_id' => auth()->id(),
+            'user_id' => session('tenant_user_profile_id'),
             'customer_id' => $customer->id,
             'action' => 'customer_created',
             'model_type' => 'Customer',
@@ -174,7 +174,7 @@ class CustomerController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:255',
             'source' => 'sometimes|required|in:inbound,outbound',
-            'assigned_sales_id' => 'nullable|exists:users,id',
+            'assigned_sales_id' => 'nullable|exists:user_profiles,id',
             'lead_status_id' => 'nullable|exists:lead_statuses,id',
             'notes' => 'nullable|string',
         ]);
@@ -185,7 +185,7 @@ class CustomerController extends Controller
         // Log significant changes
         if (isset($validated['lead_status_id']) && $oldValues['lead_status_id'] != $validated['lead_status_id']) {
             AuditLog::create([
-                'user_id' => auth()->id(),
+                'user_id' => session('tenant_user_profile_id'),
                 'customer_id' => $customer->id,
                 'action' => 'lead_status_changed',
                 'model_type' => 'Customer',
@@ -199,7 +199,7 @@ class CustomerController extends Controller
 
         if (isset($validated['area_id']) && $oldValues['area_id'] != $validated['area_id']) {
             AuditLog::create([
-                'user_id' => auth()->id(),
+                'user_id' => session('tenant_user_profile_id'),
                 'customer_id' => $customer->id,
                 'action' => 'area_changed',
                 'model_type' => 'Customer',
@@ -243,7 +243,7 @@ class CustomerController extends Controller
 
         // Log next action update
         AuditLog::create([
-            'user_id' => auth()->id(),
+            'user_id' => session('tenant_user_profile_id'),
             'customer_id' => $customer->id,
             'action' => 'next_action_updated',
             'model_type' => 'Customer',

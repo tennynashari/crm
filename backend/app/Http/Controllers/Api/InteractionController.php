@@ -46,7 +46,7 @@ class InteractionController extends Controller
         $customer = Customer::findOrFail($validated['customer_id']);
 
         $validated['created_by_type'] = 'user';
-        $validated['created_by_user_id'] = auth()->id();
+        $validated['created_by_user_id'] = session('tenant_user_profile_id');  // Use tenant user_profile ID
         $validated['lead_status_snapshot_id'] = $customer->lead_status_id;
         $validated['interaction_at'] = $validated['interaction_at'] ?? now();
 

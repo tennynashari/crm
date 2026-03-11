@@ -41,7 +41,7 @@ class Customer extends Model
 
     public function assignedSales()
     {
-        return $this->belongsTo(User::class, 'assigned_sales_id');
+        return $this->belongsTo(\App\Models\Tenant\UserProfile::class, 'assigned_sales_id');
     }
 
     public function leadStatus()
