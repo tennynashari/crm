@@ -249,17 +249,17 @@ async def predict_single_customer(request: SingleCustomerRequest):
 
 
 @app.get("/model-info")
-async def get_model_info():
-    """Get information about the current model"""
-    if not predictor.model_exists():
+async def get_model_info(database: str = "crm"):
+    """Get information about the current model for specific tenant"""
+    if not predictor.model_exists(database=database):
         return {
             "model_exists": False,
-            "message": "No model trained yet"
+            "message": f"No model trained yet for database: {database}"
         }
     
     return {
         "model_exists": True,
-        "info": predictor.get_model_info()
+        "info": predictor.get_model_info(database=database)
     }
 
 

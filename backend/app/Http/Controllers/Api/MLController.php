@@ -287,7 +287,12 @@ class MLController extends Controller
     public function modelInfo()
     {
         try {
-            $response = Http::timeout(5)->get($this->getMLServiceUrl() . '/model-info');
+            $tenantDb = $this->getTenantDatabase();
+            
+            // Pass database parameter to Python ML service
+            $response = Http::timeout(5)->get($this->getMLServiceUrl() . '/model-info', [
+                'database' => $tenantDb
+            ]);
             
             if ($response->successful()) {
                 return response()->json($response->json());
