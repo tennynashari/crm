@@ -117,8 +117,17 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
+        $masterUser = auth()->user();
+        
         return response()->json([
-            'user' => $request->user(),
+            'user' => $masterUser,
+            'tenant_context' => [
+                'company_id' => session('company_id'),
+                'tenant_db' => session('tenant_db'),
+                'tenant_user_profile_id' => session('tenant_user_profile_id'),
+                'current_default_db' => config('database.default'),
+                'current_tenant_db' => config('database.connections.tenant.database'),
+            ],
         ]);
     }
 

@@ -37,8 +37,18 @@ class TenantService
         $tenantDb = session('tenant_db');
         
         if (!$tenantDb) {
+            \Log::warning('No tenant in session', [
+                'session_id' => session()->getId(),
+                'all_session_data' => session()->all(),
+            ]);
             throw new \Exception('No tenant in session');
         }
+        
+        \Log::info('Setting tenant from session', [
+            'tenant_db' => $tenantDb,
+            'company_id' => session('company_id'),
+            'session_id' => session()->getId(),
+        ]);
         
         // Get company dari cache atau database
         $companyId = session('company_id');
@@ -51,6 +61,11 @@ class TenantService
         }
         
         $this->setTenantByCompany($company);
+        
+        \Log::info('Tenant set successfully', [
+            'tenant_db' => $company->database_name,
+            'company_name' => $company->name,
+        ]);
         
         return $this;
     }
@@ -83,6 +98,11 @@ class TenantService
         DB::purge(); // Purge default connection cache
         DB::reconnect('tenant');
         DB::reconnect(); // Reconnect default
+        
+        \Log::info('Tenant connection configured', [
+            'database' => $databaseName,
+            'default_connection' => config('database.default'),
+        ]);
     }
     
     public function getCurrentTenant()
