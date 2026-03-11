@@ -110,7 +110,7 @@ try {
                     'name' => $user->name,
                     'email' => $user->email,
                     'password' => bcrypt('password123'), // Default password
-                    'email_verified_at' => now(),
+                    'is_active' => true,
                     'created_at' => $user->created_at ?? now(),
                     'updated_at' => now(),
                 ]);
